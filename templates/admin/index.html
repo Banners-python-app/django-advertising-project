@@ -1,0 +1,197 @@
+{% extends "admin/index.html" %}
+
+{% block extrahead %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-4">Financial Overview</h1>
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            
+            <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                <div class="text-xs font-bold text-gray-500 uppercase tracking-wide">Today's Sales</div>
+                <div class="text-2xl font-extrabold text-blue-600 mt-1">₹ {{ today_sales }}</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                <div class="text-xs font-bold text-gray-500 uppercase tracking-wide">Yesterday's Sales</div>
+                <div class="text-2xl font-extrabold text-gray-700 mt-1">₹ {{ yesterday_sales }}</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                <div class="text-xs font-bold text-gray-500 uppercase tracking-wide">Revenue This Month</div>
+                <div class="text-2xl font-extrabold text-green-600 mt-1">₹ {{ monthly_revenue }}</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-lg shadow-sm border border-orange-200 bg-orange-50">
+                <div class="text-xs font-bold text-orange-600 uppercase tracking-wide">Pending Dues</div>
+                <div class="text-2xl font-extrabold text-orange-700 mt-1">₹ {{ pending_dues }}</div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="mb-8">
+        <h2 class="text-lg font-bold text-gray-900 mb-4">Operations & Inventory</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between">
+                <div>
+                    <div class="text-xs font-bold text-gray-500 uppercase tracking-wide">Total Clients</div>
+                    <div class="text-2xl font-extrabold text-gray-900 mt-1">{{ total_customers }}</div>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between">
+                <div>
+                    <div class="text-xs font-bold text-gray-500 uppercase tracking-wide">Active Hoardings</div>
+                    <div class="text-2xl font-extrabold text-gray-900 mt-1">{{ active_hoardings }}</div>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-lg shadow-sm border border-red-200 bg-red-50 flex items-center justify-between">
+                <div>
+                    <div class="text-xs font-bold text-red-600 uppercase tracking-wide">Expiring (30 Days)</div>
+                    <div class="text-2xl font-extrabold text-red-700 mt-1">{{ expiring_soon }}</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-gray-900">Expiring in 30 Days</h2>
+                <span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full">{{ expiring_soon }} Alerts</span>
+            </div>
+            
+            <div class="overflow-x-auto flex-grow">
+                <table class="w-full text-left border-collapse">
+                    <tbody class="divide-y divide-gray-100">
+                        {% for item in expiring_campaigns %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="p-4">
+                                <div class="font-bold text-gray-900">
+                                    {% if item.invoice.customer.company_name %}{{ item.invoice.customer.company_name }}{% else %}{{ item.invoice.customer.name }}{% endif %}
+                                </div>
+                                <div class="text-xs text-gray-500">{{ item.product_variant.product.name }}</div>
+                            </td>
+                            <td class="p-4 text-right">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700 border border-red-200 mb-1">
+                                    Ends: {{ item.end_date|date:"d M Y" }}
+                                </span><br>
+                                <a href="{% url 'admin:orders_invoice_change' item.invoice.id %}" class="text-blue-600 hover:text-blue-900 text-xs font-bold hover:underline">View Invoice &rarr;</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="2" class="p-8 text-center text-gray-500 font-medium">No campaigns expiring soon.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="px-4 py-3 border-t border-gray-200 bg-gray-50 flex items-center justify-between text-sm text-gray-600 mt-auto">
+                <span>Page {{ expiring_campaigns.number }} of {{ expiring_campaigns.paginator.num_pages }}</span>
+                <div class="space-x-1">
+                    {% if expiring_campaigns.has_previous %}
+                        <a href="?expiring_page={{ expiring_campaigns.previous_page_number }}&expired_page={{ expired_campaigns.number }}" class="px-2 py-1 border rounded hover:bg-gray-200">&laquo; Prev</a>
+                    {% endif %}
+                    {% if expiring_campaigns.has_next %}
+                        <a href="?expiring_page={{ expiring_campaigns.next_page_number }}&expired_page={{ expired_campaigns.number }}" class="px-2 py-1 border rounded hover:bg-gray-200">Next &raquo;</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col opacity-90">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-100 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-gray-600">Already Expired</h2>
+                <span class="bg-gray-200 text-gray-700 text-xs font-bold px-2 py-1 rounded-full">History</span>
+            </div>
+            
+            <div class="overflow-x-auto flex-grow">
+                <table class="w-full text-left border-collapse">
+                    <tbody class="divide-y divide-gray-100">
+                        {% for item in expired_campaigns %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="p-4">
+                                <div class="font-bold text-gray-600">
+                                    {% if item.invoice.customer.company_name %}{{ item.invoice.customer.company_name }}{% else %}{{ item.invoice.customer.name }}{% endif %}
+                                </div>
+                                <div class="text-xs text-gray-400">{{ item.product_variant.product.name }}</div>
+                            </td>
+                            <td class="p-4 text-right">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 mb-1">
+                                    Ended: {{ item.end_date|date:"d M Y" }}
+                                </span><br>
+                                <a href="{% url 'admin:orders_invoice_change' item.invoice.id %}" class="text-gray-500 hover:text-gray-800 text-xs font-bold hover:underline">View Invoice &rarr;</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="2" class="p-8 text-center text-gray-500 font-medium">No expired campaigns.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="px-4 py-3 border-t border-gray-200 bg-gray-50 flex items-center justify-between text-sm text-gray-600 mt-auto">
+                <span>Page {{ expired_campaigns.number }} of {{ expired_campaigns.paginator.num_pages }}</span>
+                <div class="space-x-1">
+                    {% if expired_campaigns.has_previous %}
+                        <a href="?expired_page={{ expired_campaigns.previous_page_number }}&expiring_page={{ expiring_campaigns.number }}" class="px-2 py-1 border rounded hover:bg-gray-200">&laquo; Prev</a>
+                    {% endif %}
+                    {% if expired_campaigns.has_next %}
+                        <a href="?expired_page={{ expired_campaigns.next_page_number }}&expiring_page={{ expiring_campaigns.number }}" class="px-2 py-1 border rounded hover:bg-gray-200">Next &raquo;</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            
+            // For now, these are placeholder metrics so you can see the beautiful chart.
+            // We can wire this up to real historical database data next!
+            const chartData = {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Monthly Revenue (₹)',
+                    data: [120000, 190000, 150000, 220000, 180000, parseInt("{{ monthly_revenue|default:'0' }}")],
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)', // Tailwind Blue-500
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    borderWidth: 2,
+                    tension: 0.4, // Adds that smooth curve to the line
+                    fill: true
+                }]
+            };
+
+            new Chart(ctx, {
+                type: 'line',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: function(value) { return '₹' + value; } }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+
+    <h2 class="text-xl font-bold text-gray-900 mb-4">System Modules</h2>
+    {{ block.super }}
+{% endblock %}

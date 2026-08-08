@@ -1,0 +1,63 @@
+/* 1. Force crisp borders on all form inputs in Light Mode */
+input[type="text"], input[type="number"], input[type="email"], 
+input[type="password"], textarea, select {
+    border: 1px solid #d1d5db !important; /* Clean gray border */
+    border-radius: 6px !important;
+    padding: 8px 12px !important;
+    background-color: #ffffff !important;
+    color: #111827 !important;
+}
+
+/* 2. Add a professional blue glow when clicking inside an input */
+input:focus, textarea:focus, select:focus {
+    outline: none !important;
+    border-color: #3b82f6 !important; 
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+}
+
+/* 3. DARK MODE FIXES: Fix backgrounds, borders, and dropdown text */
+html[data-theme="dark"] input[type="text"], 
+html[data-theme="dark"] input[type="number"], 
+html[data-theme="dark"] input[type="email"], 
+html[data-theme="dark"] input[type="password"], 
+html[data-theme="dark"] textarea, 
+html[data-theme="dark"] select {
+    background-color: #1f2937 !important; /* Dark gray background */
+    color: #f9fafb !important; /* Crisp white text */
+    border: 1px solid #4b5563 !important; /* Darker border for dark mode */
+}
+
+/* 4. The Magic Fix for Dropdown <option> tags in Dark Mode */
+html[data-theme="dark"] select option {
+    background-color: #1f2937 !important; 
+    color: #f9fafb !important;
+}
+
+/* ==========================================
+   FORCE SIDEBAR TO STAY OPEN AND STABLE
+   ========================================== */
+
+/* 1. Lock the sidebar (aside) to the left side */
+aside, 
+aside[class*="sidebar"],
+[class*="sidebar"] {
+    transform: translateX(0) !important;
+    visibility: visible !important;
+    display: flex !important;
+    position: fixed !important;
+    left: 0 !important;
+    z-index: 50 !important;
+}
+
+/* 2. Push the main content over so it doesn't hide behind the sidebar */
+main, 
+div[class*="flex-1"] {
+    margin-left: 16rem !important; /* 256px width */
+    width: calc(100% - 16rem) !important;
+}
+
+/* 3. Hide the hamburger menu since the sidebar is permanent */
+button[id="sidebar-toggle"],
+#sidebar-toggle {
+    display: none !important;
+}

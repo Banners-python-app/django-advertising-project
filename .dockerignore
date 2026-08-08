@@ -1,0 +1,9 @@
+.vercel/
+venv/
+.env
+.env.local
+.dockerignore
+.gitignore
+docker-compose.yaml
+.pre-commit-config.yaml
+pyproject.toml

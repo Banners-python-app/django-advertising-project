@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Invoice #{{ invoice.id }}</title>
+    <style>
+        @page {
+            size: a4;
+            margin: 1.5cm;
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            color: #000;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .text-left {
+            text-align: left;
+        }
+        .bold {
+            font-weight: bold;
+        }
+        /* Header Styling */
+        .company-name {
+            font-size: 26px;
+            font-weight: bold;
+            color: #1a1a1a;
+            margin-bottom: 2px;
+        }
+        .company-type {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .cin-number {
+            font-size: 11px;
+            margin-bottom: 15px;
+        }
+        .contact-info {
+            font-size: 11px;
+            line-height: 1.5;
+            border-bottom: 2px solid #000;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        
+        /* Two Column Layout for To and Invoice Details */
+        .info-table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .info-table td {
+            vertical-align: top;
+        }
+        .billing-box {
+            width: 60%;
+        }
+        .invoice-box {
+            width: 40%;
+            text-align: right;
+        }
+
+        /* Main Item Table */
+        .item-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        .item-table th {
+            border: 1px solid #000;
+            padding: 8px 5px;
+            background-color: #f8f8f8;
+            font-weight: bold;
+            text-align: center;
+        }
+        .item-table td {
+            border: 1px solid #000;
+            padding: 8px 5px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .item-table .desc-col {
+            text-align: left;
+        }
+
+        /* Totals and Footer */
+        .totals-wrapper {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .totals-wrapper td {
+            vertical-align: top;
+        }
+        .bank-details {
+            width: 60%;
+            font-size: 11px;
+            line-height: 1.6;
+            padding-top: 10px;
+        }
+        .totals-table {
+            width: 40%;
+            border-collapse: collapse;
+        }
+        .totals-table td {
+            border: 1px solid #000;
+            padding: 6px 8px;
+            text-align: right;
+        }
+        .totals-table .label {
+            font-weight: bold;
+            background-color: #f8f8f8;
+        }
+        
+        .signature-box {
+            text-align: right;
+            margin-top: 40px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="text-center">
+        <div class="company-name">SHIRDI CROWN ADVERTISING</div>
+        <div class="company-type">Pvt. Ltd.</div>
+        <div class="cin-number">CIN: U73100PN2025PTC237545</div>
+        
+        <div class="contact-info">
+            Mauli Nagar, Shirdi - 423109, Tal.Rahata, Dist. Ahilyanagar, Maharashtra.<br>
+            Prop: Salunke Shankar Ramesh | Mob: 8412088000<br>
+            Email: shirdicrownadvertising@gmail.com<br>
+            <span class="bold">GST NO. 27AB PCS1316Q 1ZP</span>
+        </div>
+    </div>
+
+    <table class="info-table">
+        <tr>
+            <td class="billing-box">
+                <div class="bold">TO:</div>
+                <div class="bold" style="font-size: 14px;">
+                    {% if invoice.customer.company_name %}
+                        {{ invoice.customer.company_name }}
+                    {% else %}
+                        {{ invoice.customer.name }}
+                    {% endif %}
+                </div>
+                <div>{{ invoice.customer.address }}</div>
+                {% if invoice.customer.gst_number %}
+                    <div class="bold" style="margin-top: 5px;">GSTIN: {{ invoice.customer.gst_number }}</div>
+                {% endif %}
+            </td>
+            <td class="invoice-box">
+                <div><span class="bold">Invoice Number:</span> {{ invoice.id|stringformat:"04d" }}</div>
+                <div><span class="bold">Date:</span> {{ invoice.created_at|date:"d M Y" }}</div>
+                <div style="margin-top: 5px; font-size: 11px;">
+                    <span class="bold">Billing Period:</span><br> 
+                    {{ invoice.items.first.start_date|date:"d F Y" }} To {{ invoice.items.last.end_date|date:"d F Y" }}
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="item-table">
+        <thead>
+            <tr>
+                <th width="5%">SN</th>
+                <th width="35%" class="desc-col">Media Description</th>
+                <th width="10%">HSN</th>
+                <th width="8%">W</th>
+                <th width="8%">H</th>
+                <th width="15%">Rate (₹)</th>
+                <th width="19%">Total (₹)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in invoice.items.all %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td class="desc-col">
+                    <span class="bold">{{ item.product_variant.product.name }}</span><br>
+                    <span style="font-size: 10px; color: #555;">
+                        {{ item.start_date|date:"d M Y" }} to {{ item.end_date|date:"d M Y" }}
+                    </span>
+                </td>
+                <td>{{ item.product_variant.hsn_code|default:"998366" }}</td>
+                <td>{{ item.product_variant.length }}</td>
+                <td>{{ item.product_variant.height }}</td>
+                <td>{{ item.amount }}</td>
+                <td>{{ item.amount }}</td>
+            </tr>
+            {% endfor %}
+            
+            <tr>
+                <td colspan="6" class="text-right bold" style="padding-right: 10px;">TOTAL</td>
+                <td class="bold">{{ invoice.subtotal }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="totals-wrapper">
+        <tr>
+            <td class="bank-details">
+                <div class="bold" style="text-decoration: underline; margin-bottom: 5px;">Account Details:</div>
+                <div class="bold">PUNJAB NATIONAL BANK</div>
+                <div>SHIRDI CROWN ADVERTISING PVT. LTD.</div>
+                <div><span class="bold">AC NO:</span> 1597 10210000 0895</div>
+                <div><span class="bold">IFSC NO:</span> PUNB0159710</div>
+                <div><span class="bold">GST NO:</span> 27AB PCS1316Q 1ZP</div>
+            </td>
+            
+            <td style="padding-top: 10px;">
+                <table class="totals-table">
+                    <tr>
+                        <td class="label">Total Tax (18%)</td>
+                        <td>₹ {{ invoice.gst_amount }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="font-size: 14px;">GRAND TOTAL</td>
+                        <td class="bold" style="font-size: 14px;">₹ {{ invoice.grand_total }}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <div class="signature-box">
+        <div style="margin-bottom: 40px;">For- Shirdi Crown Advertising Pvt Ltd</div>
+        <div>Authorized Signatory</div>
+    </div>
+
+</body>
+</html> 

@@ -1,0 +1,31 @@
+{% extends "unfold/layouts/base.html" %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    /* 1. CSS Override */
+    aside, [class*="sidebar"] {
+        transform: translateX(0) !important;
+        display: block !important;
+        width: 16rem !important;
+    }
+    main, .flex-1 {
+        margin-left: 16rem !important;
+    }
+</style>
+
+<script>
+    // 2. JavaScript Override (The Hammer)
+    // This runs a check every half-second to ensure the sidebar stays open
+    document.addEventListener("DOMContentLoaded", function() {
+        setInterval(function() {
+            let sidebar = document.querySelector('aside');
+            if (sidebar) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.classList.remove('hidden');
+                sidebar.style.setProperty('transform', 'translateX(0)', 'important');
+            }
+        }, 500); // 500 milliseconds
+    });
+</script>
+{% endblock %}

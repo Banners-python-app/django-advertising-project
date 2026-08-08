@@ -1,0 +1,256 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}Shirdi Hoardings | Premium Hoardings{% endblock %}
+
+{% block content %}
+<style>
+    /* Slider Aspect Ratio Control */
+    .slider-img {
+        width: 100%;
+        /* Mobile: Keeps it looking good on tiny screens */
+        object-fit: cover;
+        aspect-ratio: 16/9; 
+    }
+    
+    @media (min-width: 768px) {
+        .slider-img {
+            /* Desktop: Removes cropping entirely to show the full un-cut image */
+            aspect-ratio: auto; 
+            height: auto;
+            max-height: 700px;
+            object-fit: contain; /* Guarantees zero cutting */
+            background-color: #f8f9fa; /* Blends nicely if your image isn't super wide */
+        }
+    }
+
+    /* Category Circle Animations - Made Responsive */
+    .category-link {
+        text-decoration: none;
+        display: block;
+        transition: transform 0.3s ease;
+    }
+    
+    .category-circle {
+        /* Mobile size (safe for small phone screens) */
+        width: 100px;
+        height: 100px;
+        margin: 0 auto;
+        background-color: #f8f9fa;
+        border: 2px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    /* Desktop size (Massive and premium) */
+    @media (min-width: 768px) {
+        .category-circle {
+            width: 140px;
+            height: 140px;
+        }
+    }
+
+    .category-link:hover {
+        transform: translateY(-5px);
+    }
+    .category-link:hover .category-circle {
+        border-color: #FF671F; /* Updated hover border to match Bhagava orange */
+        background-color: #fff0e6; /* Soft orange tint */
+        box-shadow: 0 0.5rem 1rem rgba(255, 103, 31, 0.15);
+    }
+    .category-icon {
+        color: #6c757d;
+        transition: color 0.3s ease;
+        /* Scaled up the icon size */
+        width: 42px;
+        height: 42px;
+    }
+    .category-link:hover .category-icon {
+        color: #FF671F; /* Updated icon hover color */
+    }
+
+    /* Product Card Hover Animations */
+    .hover-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.15)!important;
+    }
+
+    /* Text Clamp for Descriptions */
+    .text-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .btn-dark-premium {
+        background-color: #111827;
+        color: white;
+        border: none;
+    }
+    .btn-dark-premium:hover {
+        background-color: #1f2937;
+        color: white;
+    }
+    
+    /* Video Play Icon Overlay for Thumbnail */
+    .video-play-overlay {
+        width: 50px;
+        height: 50px;
+        background-color: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(2px);
+        transition: all 0.3s ease;
+    }
+    .hover-card:hover .video-play-overlay {
+        background-color: #FF671F;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+</style>
+
+<div id="homeSlider" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="4000">
+    <div class="carousel-indicators">
+        <button type="button" data-bs-target="#homeSlider" data-bs-slide-to="0" class="active"></button>
+        <button type="button" data-bs-target="#homeSlider" data-bs-slide-to="1"></button>
+        <button type="button" data-bs-target="#homeSlider" data-bs-slide-to="2"></button>
+    </div>
+    
+    <div class="carousel-inner shadow-sm">
+        <div class="carousel-item active">
+            <a href=""><img src="{% static 'images/slider-1.jpeg' %}" class="d-block w-100 slider-img" alt="Slider 1"></a>
+        </div>
+        <div class="carousel-item">
+            <a href=""><img src="{% static 'images/slider-2.jpeg' %}" class="d-block w-100 slider-img" alt="Slider 2"></a>
+        </div>
+        <div class="carousel-item">
+            <a href=""><img src="{% static 'images/slider-3.jpeg' %}" class="d-block w-100 slider-img" alt="Slider 3"></a>
+        </div>
+    </div>
+    
+    <button class="carousel-control-prev" type="button" data-bs-target="#homeSlider" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#homeSlider" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+
+</div> <div class="w-100 py-3 shadow-sm" style="background-color: #FF671F;">
+    <div class="container text-center">
+        <h5 class="text-white text-uppercase fw-bold mb-0" style="letter-spacing: 4px;">Shirdi Crown Advertising Pvt Ltd</h5>
+    </div>
+</div>
+
+<section class="container pt-5 mt-2">
+    <div class="text-center mb-5">
+        <h3 class="fw-bold text-dark mb-1">Browse by Category</h3>
+        <p class="text-muted small">Select a network to view available spaces</p>
+    </div>
+    
+    <div class="row justify-content-center g-4 text-center mb-4">
+        {% for cat in categories %}
+        <div class="col-4 col-md-3 col-lg-2">
+            <a href="{% url 'category_products' slug=cat.slug %}" class="category-link">
+                <div class="category-circle rounded-circle shadow-sm mb-3 overflow-hidden">
+                    {% if cat.image %}
+                        <img src="{{ cat.image.url }}" class="w-100 h-100" style="object-fit: cover;" alt="{{ cat.name }}">
+                    {% else %}
+                        <svg class="category-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                        </svg>
+                    {% endif %}
+                </div>
+                <h6 class="fw-bold text-dark text-uppercase mb-0 mt-3" style="font-size: 0.8rem; letter-spacing: 0.5px;">{{ cat.name }}</h6>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="container py-5 mt-3 border-top">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark mb-0">Featured Locations</h2>
+        <span class="text-muted fw-medium fs-6 d-none d-sm-inline-block">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-telephone-fill text-primary me-1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z"/></svg>
+            Call: <a href="tel:+918412088000" class="text-decoration-none text-primary">84120 88000</a>
+        </span>
+    </div>
+    
+    <div class="row g-4">
+        {% for hoarding in hoardings %}
+        <div class="col-12 col-md-6 col-lg-4 d-flex">
+            <div class="card w-100 border-0 shadow-sm rounded-4 hover-card overflow-hidden">
+                <a href="{% url 'product_detail' pk=hoarding.pk %}" class="text-decoration-none">
+                    
+                    <!-- 1. Normal Uploaded Image -->
+                    {% if hoarding.images.first %}
+                        <img src="{{ hoarding.images.first.image.url }}" alt="{{ hoarding.name }}" class="card-img-top" style="height: 220px; object-fit: cover;">
+                    
+                    <!-- 2. YouTube Thumbnail Fallback -->
+                    {% elif hoarding.youtube_id %}
+                        <div class="position-relative">
+                            <!-- Fetches the high-quality thumbnail directly from YouTube servers -->
+                            <img src="https://img.youtube.com/vi/{{ hoarding.youtube_id }}/hqdefault.jpg" alt="{{ hoarding.name }} Video" class="card-img-top" style="height: 220px; object-fit: cover;">
+                            
+                            <!-- Sleek Play Button Overlay -->
+                            <div class="video-play-overlay position-absolute top-50 start-50 translate-middle text-white rounded-circle d-flex align-items-center justify-content-center shadow">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16" style="margin-left: 4px;">
+                                    <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+                                </svg>
+                            </div>
+                        </div>
+                        
+                    <!-- 3. No Image / No Video Fallback -->
+                    {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center border-bottom" style="height: 220px;">
+                            <span class="text-muted fw-medium">No Image Available</span>
+                        </div>
+                    {% endif %}
+                    
+                </a>
+                
+                <div class="card-body d-flex flex-column p-4">
+                    {% if hoarding.category %}
+                    <div class="mb-2">
+                        <span class="badge bg-primary bg-opacity-10 text-primary text-uppercase px-2 py-1 rounded-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                            {{ hoarding.category.name }}
+                        </span>
+                    </div>
+                    {% endif %}
+                    
+                    <h5 class="card-title fw-bold text-dark mb-2">{{ hoarding.name }}</h5>
+                    {% if hoarding.is_currently_booked %}
+        <span class="badge bg-danger rounded-pill px-2 py-1" style="font-size: 0.65rem;">BOOKED</span>
+    {% else %}
+        <span class="badge bg-success rounded-pill px-2 py-1" style="font-size: 0.65rem;">AVAILABLE</span>
+    {% endif %}
+                    
+                    <div class="card-text text-secondary mb-4 text-clamp-3" style="font-size: 0.9rem;">
+                        {{ hoarding.description|safe }}
+                    </div>
+                    
+                    <div class="mt-auto d-flex gap-2">
+                        <a href="{% url 'product_detail' pk=hoarding.pk %}" class="btn btn-outline-primary w-50 fw-medium">Details</a>
+                        <a href="{% url 'contact' %}" class="btn btn-dark-premium w-50 fw-medium">Quote</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <div class="bg-light rounded-4 py-5 border border-dashed">
+                <h4 class="text-muted mb-2">No active hoardings found</h4>
+                <p class="text-secondary mb-0">Add some locations from the Admin Dashboard to see them here!</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

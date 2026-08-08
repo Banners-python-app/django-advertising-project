@@ -1,0 +1,324 @@
+{% extends 'website/base.html' %}
+
+{% block title %}{{ product.name }} | Premium Hoardings{% endblock %}
+
+{% block content %}
+<style>
+    /* Premium Image Zoom Effect (For Images Only) */
+    .product-image-wrapper {
+        overflow: hidden;
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.08);
+        background-color: #e9ecef;
+    }
+    
+    .product-image {
+        width: 100%;
+        transition: transform 0.5s ease;
+    }
+
+    /* Mobile specific: Show full image without cropping */
+    @media (max-width: 991px) {
+        .product-image {
+            height: auto;
+            max-height: 400px;
+            object-fit: contain; 
+        }
+    }
+
+    /* Desktop specific: Maintain massive premium cinematic look */
+    @media (min-width: 992px) {
+        .product-image {
+            min-height: 500px;
+            max-height: 700px;
+            object-fit: cover;
+        }
+    }
+
+    img.product-image:hover {
+        transform: scale(1.03);
+    }
+    
+    /* Video Player Specific Container */
+    .video-wrapper {
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.08);
+        background-color: #000;
+    }
+
+    /* Thumbnail Gallery Styles */
+    .thumbnail-wrapper {
+        width: 80px;
+        height: 80px;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+        opacity: 0.6;
+    }
+    
+    .thumbnail-wrapper:hover {
+        opacity: 1;
+        transform: translateY(-2px);
+    }
+    
+    .thumbnail-wrapper.active {
+        border-color: #FF671F; /* Shirdi Crown Orange */
+        opacity: 1;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .thumbnail-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    /* Hide scrollbar for a cleaner look if there are many thumbnails */
+    .gallery-scroll::-webkit-scrollbar {
+        height: 6px;
+    }
+    .gallery-scroll::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1;
+        border-radius: 10px;
+    }
+    
+    /* Custom Icon SVG style */
+    .icon-sm { width: 16px; height: 16px; display: inline-block; vertical-align: text-top; }
+</style>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/airbnb.css">
+
+<div class="bg-light min-vh-100 py-5 overflow-hidden">
+    <div class="container">
+        
+        <div class="mb-4">
+            <a href="/" class="text-decoration-none text-primary fw-medium d-inline-flex align-items-center transition">
+                <svg class="icon-sm me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Inventory
+            </a>
+        </div>
+
+        <div class="row g-4 g-lg-5 align-items-start">
+            
+            <div class="col-12 col-lg-7">
+                {% if product.images.all %}
+                    <div class="product-image-wrapper position-relative mb-3">
+                        <img src="{{ product.images.first.image.url }}" id="mainProductImage" alt="{{ product.name }}" class="product-image">
+                    </div>
+                    
+                    {% if product.images.all|length > 1 %}
+                    <div class="d-flex gap-2 overflow-auto pb-2 gallery-scroll">
+                        {% for img in product.images.all %}
+                            <div class="thumbnail-wrapper flex-shrink-0 {% if forloop.first %}active{% endif %}" 
+                                 onclick="changeMainImage(this, '{{ img.image.url }}')">
+                                <img src="{{ img.image.url }}" alt="{{ product.name }} view {{ forloop.counter }}" class="thumbnail-img">
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                
+                {% elif product.youtube_id %}
+                    <div class="video-wrapper position-relative w-100">
+                        <div class="ratio ratio-16x9 w-100">
+                            <iframe 
+                                src="https://www.youtube-nocookie.com/embed/{{ product.youtube_id }}?rel=0&modestbranding=1" 
+                                title="YouTube video player"
+                                class="border-0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                        <span class="badge bg-danger position-absolute top-0 start-0 m-3 px-3 py-2 text-uppercase rounded-pill shadow d-flex align-items-center" style="letter-spacing: 1px; pointer-events: none; z-index: 10;">
+                            <svg class="icon-sm me-1" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M6.271 5.055a.5.5 0 0 1 .52.038l3.5 2.5a.5.5 0 0 1 0 .814l-3.5 2.5A.5.5 0 0 1 6 10.5v-5a.5.5 0 0 1 .271-.445z"/></svg>
+                            Video Walkthrough
+                        </span>
+                    </div>
+                
+                {% else %}
+                    <div class="bg-white border border-2 border-dashed rounded-4 d-flex flex-column align-items-center justify-content-center text-muted" style="min-height: 400px;">
+                        <svg class="mb-3" style="width: 48px; height: 48px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 002-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span class="fs-5 fw-medium">No Image or Video Available</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="col-12 col-lg-5">
+                <div class="bg-white rounded-4 shadow-sm p-4 p-md-5 border border-light">
+                    
+                    <div class="border-bottom pb-4 mb-4">
+                        
+                        <div class="d-flex justify-content-between align-items-start mb-3 gap-3">
+                            <h1 class="fs-4 fw-bold text-dark mb-0">{{ product.name }}</h1>
+                            
+                            {% if product.is_currently_booked %}
+                                <span class="badge bg-danger rounded-pill px-3 py-2 shadow-sm text-uppercase mt-2 mt-sm-0" style="letter-spacing: 1px; font-size: 0.75rem; white-space: nowrap;">
+                                    🔴 Booked
+                                </span>
+                            {% else %}
+                                <span class="badge bg-success rounded-pill px-3 py-2 shadow-sm text-uppercase mt-2 mt-sm-0" style="letter-spacing: 1px; font-size: 0.75rem; white-space: nowrap;">
+                                    🟢 Available
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if product.location_address or product.map_coordinates %}
+                        <div class="bg-light rounded p-3 mb-3 border border-light">
+                            {% if product.location_address %}
+                            <p class="text-dark mb-1 fw-medium" style="font-size: 0.95rem;">
+                                <svg class="icon-sm me-1 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.242-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                {{ product.location_address|safe }}
+                            </p>
+                            {% endif %}
+                            
+                            {% if product.map_coordinates %}
+                            <p class="text-muted small mb-0 d-flex align-items-center">
+                                <svg class="icon-sm me-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+                                GPS: {{ product.map_coordinates }}
+                            </p>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="border-bottom pb-4 mb-4">
+                        <span class="text-uppercase text-muted fw-bold small d-block mb-3" style="letter-spacing: 1px;">Available Dimensions & Pricing</span>
+                        
+                        <div class="d-flex flex-column gap-3">
+                            {% for variant in product.variants.all %}
+                                {% if variant.is_active %}
+                                <div class="bg-white rounded-3 p-3 border border-gray-200 shadow-sm transition hover-card">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <span class="fw-bold text-dark fs-5">
+                                                {% if variant.length and variant.height %}
+                                                    {{ variant.length }} ft &times; {{ variant.height }} ft
+                                                {% else %}
+                                                    Standard Size
+                                                {% endif %}
+                                            </span>
+                                            <span class="text-muted small d-block">Dimensions</span>
+                                        </div>
+                                        
+                                        <div class="text-end">
+                                            {% if variant.mrp and variant.mrp > variant.online_price %}
+                                                <span class="text-decoration-line-through text-muted small me-2">₹{{ variant.mrp }}</span>
+                                            {% endif %}
+                                            <span class="fs-4 fw-bolder text-dark">
+                                                {% if variant.online_price %}
+                                                    ₹{{ variant.online_price }}
+                                                {% else %}
+                                                    Enquire
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex flex-wrap gap-2 mt-3">
+                                        {% if variant.sku %}<span class="badge bg-light text-dark border fw-normal">SKU: {{ variant.sku }}</span>{% endif %}
+                                        {% if variant.hsn_code %}<span class="badge bg-light text-dark border fw-normal">HSN: {{ variant.hsn_code }}</span>{% endif %}
+                                        
+                                        <span class="badge bg-light text-dark border fw-normal">GST: {{ variant.gst_percentage|default:"18"|floatformat:0 }}% Excluded</span>
+                                        
+                                        {% if variant.stock > 0 %}
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 fw-medium">In Stock</span>
+                                        {% else %}
+                                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 fw-medium">Sold Out</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% empty %}
+                                <div class="alert alert-secondary mb-0 text-center border-0">
+                                    <span class="fw-medium text-muted fst-italic">Pricing available upon inquiry.</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h3 class="text-uppercase text-dark fw-bold small mb-3" style="letter-spacing: 1px;">Asset Overview</h3>
+                        <div class="text-secondary lh-lg fs-6">
+                            {{ product.description|safe|default:"No description available for this hoarding." }}
+                        </div>
+                    </div>
+
+                    <div class="card bg-primary bg-opacity-10 border-primary border-opacity-25 mt-4 shadow-sm">
+                        <div class="card-body p-4">
+                            <h5 class="text-primary fw-bold mb-3">Check Availability & Book</h5>
+                            
+                            <form method="GET" action="{% url 'contact' %}">
+                                <input type="hidden" name="product_id" value="{{ product.id }}">
+                                
+                                <div class="row gx-2 gy-3 align-items-center">
+                                    <div class="col-12 col-sm-8">
+                                        <div class="position-relative">
+                                            <svg class="icon-sm text-primary position-absolute top-50 start-0 translate-middle-y ms-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                            <input type="text" id="booking_dates" name="requested_dates" class="form-control bg-white border-primary border-opacity-25 ps-5 py-2 shadow-sm" placeholder="Select dates..." required readonly style="cursor: pointer;">
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-4">
+                                        <button type="submit" class="btn btn-primary py-2 w-100 fw-bold shadow-sm">Enquire</button>
+                                    </div>
+                                </div>
+                            </form>
+                            
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Parse the JSON data sent from the Django View
+        // Safely fallback to an empty array if context is missing during testing
+        const bookedDates = JSON.parse('{{ disabled_dates_json|safe|default:"[]" }}');
+        
+        flatpickr("#booking_dates", {
+            mode: "range",          // Allows picking a start and end date
+            minDate: "today",       // Prevent booking in the past
+            dateFormat: "Y-m-d",    
+            disable: bookedDates,   // 🔥 Blocks out the sold dates!
+            altInput: true,
+            altFormat: "F j, Y",    // Makes the dates look pretty to the user (e.g. October 12, 2026)
+            
+            // Optional: Pop an alert if they try to highlight over a booked date
+            onValueUpdate: function(selectedDates, dateStr, instance) {
+                // Flatpickr handles the physical blocking visually, but this ensures 
+                // they can't drag a range *across* a disabled date block.
+            }
+        });
+    });
+
+    // Gallery Image Swapper
+    function changeMainImage(clickedThumbnail, imageUrl) {
+        // 1. Change the main image source to the clicked thumbnail's URL
+        const mainImage = document.getElementById('mainProductImage');
+        mainImage.src = imageUrl;
+        
+        // 2. Remove the 'active' styling from all thumbnails
+        const allThumbnails = document.querySelectorAll('.thumbnail-wrapper');
+        allThumbnails.forEach(thumb => {
+            thumb.classList.remove('active');
+        });
+        
+        // 3. Add the 'active' styling to the specific thumbnail that was just clicked
+        clickedThumbnail.classList.add('active');
+    }
+</script>
+{% endblock %}

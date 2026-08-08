@@ -1,0 +1,204 @@
+{% extends 'website/base.html' %}
+
+{% block title %}About Us | Shirdi Crown Hoardings | Premium Hoardings{% endblock %}
+
+{% block content %}
+<style>
+    .text-brand { color: #FF671F; }
+    .bg-brand { background-color: #FF671F; }
+    .bg-brand-light { background-color: rgba(255, 103, 31, 0.1); }
+    
+    .hover-card-up {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hover-card-up:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.1)!important;
+    }
+
+    .service-pill {
+        transition: all 0.2s ease;
+        border: 1px solid #e5e7eb;
+    }
+    .service-pill:hover {
+        border-color: #FF671F;
+        background-color: rgba(255, 103, 31, 0.05);
+    }
+</style>
+
+<!-- HERO SECTION -->
+<div class="bg-light py-5 border-bottom">
+    <div class="container py-4 text-center">
+        <h1 class="display-4 fw-bolder text-dark mb-3">Shirdi Crown Advertisement</h1>
+        <p class="lead fw-medium text-brand mb-0" style="letter-spacing: 1px;">"Crowning Your Brand with Visibility"</p>
+    </div>
+</div>
+
+<div class="container py-5">
+    
+    <!-- COMPANY OVERVIEW -->
+    <div class="row justify-content-center mb-5 pb-4">
+        <div class="col-lg-10 text-center">
+            <h2 class="fw-bold text-dark mb-4">Who We Are</h2>
+            <p class="text-secondary lh-lg fs-5">
+                Shirdi Crown Advertisement Private Limited is a premier outdoor advertising and branding company based in the Shirdi region of Maharashtra. We specialize in providing high-impact advertising solutions that help businesses, organizations, and institutions reach their target audience through strategic outdoor media placements and digital marketing services.
+            </p>
+        </div>
+    </div>
+
+    <!-- VISION & MISSION -->
+    <div class="row g-4 mb-5 pb-4">
+        <div class="col-md-6">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-4 hover-card-up bg-brand-light">
+                <div class="card-body text-center">
+                    <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm mb-4" style="width: 70px; height: 70px;">
+                        <svg width="32" height="32" fill="none" stroke="#FF671F" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                    </div>
+                    <h3 class="fw-bold text-dark h4 mb-3">Our Vision</h3>
+                    <p class="text-secondary mb-0">To become the most trusted and innovative advertising company in Maharashtra by delivering measurable brand visibility and business growth.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-4 hover-card-up bg-brand-light">
+                <div class="card-body text-center">
+                    <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm mb-4" style="width: 70px; height: 70px;">
+                        <svg width="32" height="32" fill="none" stroke="#FF671F" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <h3 class="fw-bold text-dark h4 mb-3">Our Mission</h3>
+                    <p class="text-secondary mb-0">To provide affordable, creative, and result-oriented advertising solutions that connect brands with customers effectively.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WHY CHOOSE US & TARGET CLIENTS -->
+    <div class="row g-5 mb-5 pb-4">
+        
+        <div class="col-lg-6">
+            <h3 class="fw-bold text-dark mb-4 border-bottom pb-2">Why Choose Us?</h3>
+            <ul class="list-unstyled">
+                <li class="d-flex align-items-center mb-3 text-secondary">
+                    <svg class="text-brand me-3 flex-shrink-0" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+                    </svg>
+                    <span class="fs-6">Prime advertising locations in and around Shirdi</span>
+                </li>
+                <li class="d-flex align-items-center mb-3 text-secondary">
+                    <svg class="text-brand me-3 flex-shrink-0" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+                    </svg>
+                    <span class="fs-6">Cost-effective branding solutions</span>
+                </li>
+                <li class="d-flex align-items-center mb-3 text-secondary">
+                    <svg class="text-brand me-3 flex-shrink-0" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+                    </svg>
+                    <span class="fs-6">Professional design and marketing team</span>
+                </li>
+                <li class="d-flex align-items-center mb-3 text-secondary">
+                    <svg class="text-brand me-3 flex-shrink-0" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+                    </svg>
+                    <span class="fs-6">Customized advertising packages</span>
+                </li>
+                <li class="d-flex align-items-center mb-3 text-secondary">
+                    <svg class="text-brand me-3 flex-shrink-0" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+                    </svg>
+                    <span class="fs-6">End-to-end campaign management</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="col-lg-6">
+            <h3 class="fw-bold text-dark mb-4 border-bottom pb-2">Target Clients</h3>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="badge bg-light text-dark border px-3 py-2 fw-medium rounded-pill">Hotels & Restaurants</span>
+                <span class="badge bg-light text-dark border px-3 py-2 fw-medium rounded-pill">Real Estate Developers</span>
+                <span class="badge bg-light text-dark border px-3 py-2 fw-medium rounded-pill">Educational Institutions</span>
+                <span class="badge bg-light text-dark border px-3 py-2 fw-medium rounded-pill">Hospitals & Clinics</span>
+                <span class="badge bg-light text-dark border px-3 py-2 fw-medium rounded-pill">Retail Stores</span>
+                <span class="badge bg-light text-dark border px-3 py-2 fw-medium rounded-pill">Automobile Dealers</span>
+                <span class="badge bg-light text-dark border px-3 py-2 fw-medium rounded-pill">Political Campaigns</span>
+                <span class="badge bg-light text-dark border px-3 py-2 fw-medium rounded-pill">Startups & SMEs</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- OUR SERVICES -->
+    <div class="mb-5 pb-4 text-center">
+        <h3 class="fw-bold text-dark mb-4">Our Services</h3>
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+            <div class="service-pill px-4 py-3 rounded-4 bg-white shadow-sm fw-medium text-dark d-flex align-items-center">
+                🛣️ Hoarding & Billboard Advertising
+            </div>
+            <div class="service-pill px-4 py-3 rounded-4 bg-white shadow-sm fw-medium text-dark d-flex align-items-center">
+                🛺 Auto Rickshaw Advertising
+            </div>
+            <div class="service-pill px-4 py-3 rounded-4 bg-white shadow-sm fw-medium text-dark d-flex align-items-center">
+                💡 Pole Kiosk Advertising
+            </div>
+            <div class="service-pill px-4 py-3 rounded-4 bg-white shadow-sm fw-medium text-dark d-flex align-items-center">
+                🚌 Bus Shelter Branding
+            </div>
+            <div class="service-pill px-4 py-3 rounded-4 bg-white shadow-sm fw-medium text-dark d-flex align-items-center">
+                🏪 Shop Branding & Signage
+            </div>
+            <div class="service-pill px-4 py-3 rounded-4 bg-white shadow-sm fw-medium text-dark d-flex align-items-center">
+                📢 Political & Event Promotions
+            </div>
+        </div>
+    </div>
+
+    <!-- CORPORATE DETAILS -->
+    <div class="card border-0 bg-dark text-white shadow rounded-4 overflow-hidden">
+        <div class="row g-0">
+            <div class="col-md-8 p-4 p-md-5">
+                <h4 class="fw-bold text-white mb-4 text-uppercase" style="letter-spacing: 1px;">Corporate Information</h4>
+                <div class="row g-4">
+                    <div class="col-sm-6">
+                        <span class="text-white-50 small d-block mb-1">Company Name</span>
+                        <span class="fw-medium">Shirdi Crown Advertisement Pvt Ltd</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-white-50 small d-block mb-1">Industry</span>
+                        <span class="fw-medium">Advertising & Marketing</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-white-50 small d-block mb-1">Business Type</span>
+                        <span class="fw-medium">Private Limited Company</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-white-50 small d-block mb-1">Headquarters</span>
+                        <span class="fw-medium">Shirdi, Maharashtra</span>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 border-top border-secondary">
+                    <span class="text-white-50 small d-block mb-2">Primary Service Areas</span>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge bg-secondary bg-opacity-25 px-2 py-1">Shirdi</span>
+                        <span class="badge bg-secondary bg-opacity-25 px-2 py-1">Rahata</span>
+                        <span class="badge bg-secondary bg-opacity-25 px-2 py-1">Kopargaon</span>
+                        <span class="badge bg-secondary bg-opacity-25 px-2 py-1">Ahmednagar</span>
+                        <span class="badge bg-secondary bg-opacity-25 px-2 py-1">Nashik</span>
+                        <span class="badge bg-secondary bg-opacity-25 px-2 py-1 text-brand fw-bold">All Maharashtra</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 bg-brand d-flex align-items-center justify-content-center p-4">
+                <div class="text-center">
+                    <h4 class="fw-bold text-white mb-3">Ready to grow?</h4>
+                    <a href="{% url 'contact' %}" class="btn btn-light btn-lg fw-bold text-brand rounded-pill px-4 shadow-sm hover-card-up">
+                        Contact Us Today
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- REQUIRED CUSTOM TEMPLATE FILTER -->
+<!-- Note: If you don't already have a 'split' filter, you can either replace the loops above with hardcoded HTML elements, or add the split filter to your templatetags folder! -->
+{% endblock %}
