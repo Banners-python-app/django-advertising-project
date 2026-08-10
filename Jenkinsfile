@@ -13,8 +13,9 @@ pipeline {
     stages {
         stage ('Checkout info') {
             steps {
-                echo 'Building ${env.APP_NAME} for TARGET=${params.TARGET}'
-                sh 'git rev-parse --short HEAD | tee commit.txt || echo "no-git-in-commit" | tee commit.txt'    // fetch commit SHA | add to commi.tx ||(OR) run only if earlier cmd failed
+                echo "Building ${env.APP_NAME} for TARGET=${params.TARGET}"
+                // fetch commit SHA | add to commi.tx ||(OR) run only if earlier cmd failed
+                sh 'git rev-parse --short HEAD | tee commit.txt || echo "no-git-in-commit" | tee commit.txt'
                 sh 'ls -la'
             }
         }
