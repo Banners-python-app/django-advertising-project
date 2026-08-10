@@ -5,6 +5,7 @@ pipeline {
         disableConcurrentBuilds()
     }
     parameters{
+        booleanParam(name: 'RUN_SLOW_TEST', defaultValue: false)
         string(name: 'TARGET', defaultValue: 'local', description: 'Build target label')
     }
     environment {
