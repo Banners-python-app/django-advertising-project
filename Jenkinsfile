@@ -22,7 +22,7 @@ pipeline {
         stage ('Test') {
             steps {
                 sh 'test -f Jenkinsfile'
-                sh 'test -f README.md'
+                sh 'test -f readme.md'
             }
         }
     }
