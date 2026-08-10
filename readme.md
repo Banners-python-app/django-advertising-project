@@ -1,0 +1,1 @@
+1. In Dockerfile we are using buildkit and buildx so we need to install extra packages as mentioned in the Dockerfile RUN and also install buildx. For buildkit we need to enable it.
