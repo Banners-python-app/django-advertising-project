@@ -26,6 +26,14 @@ pipeline {
                 sh 'test -f readme.md'
             }
         }
+        stage('Slow Test') {
+            when{
+                expression { params.RUN_SLOW_TEST }
+            }
+            steps {
+                echo "Slow tests"
+            }
+        }
     }
     post{
         always {
