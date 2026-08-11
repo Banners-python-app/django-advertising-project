@@ -14,6 +14,8 @@ pipeline {
     stages {
         stage ('Checkout info') {
             steps {
+                echo "BRANCH NAME=${env.BRANCH_NAME}"
+                echo "CHANGE ID=${env.CHANGE_ID}"
                 echo "Building ${env.APP_NAME} for TARGET=${params.TARGET}"
                 // fetch commit SHA | add to commi.tx ||(OR) run only if earlier cmd failed
                 sh 'git rev-parse --short HEAD | tee commit.txt || echo "no-git-in-commit" | tee commit.txt'
