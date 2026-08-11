@@ -8,7 +8,7 @@ WORKDIR /build
 # Install system dependencies required for building Python packages (like psycopg2)
 # We clean up the apt cache immediately to keep the build layer small
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc libpq-dev && rm -rf /var/lib/apt/lists/*
+    gcc libpq-dev libcairo2-dev pkg-config python3-dev && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt .
 
 # Create python "wheels" (pre-compiled binaries) instead of installing directly
@@ -24,7 +24,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \  
-    libpq5 && rm -rf /var/lib/apt/lists/*
+    libpq5 gcc libpq-dev libcairo2-dev pkg-config python3-dev && rm -rf /var/lib/apt/lists/*
 # creating grp n user 
 RUN addgroup --system django && adduser --system --ingroup django django
 
