@@ -68,7 +68,7 @@ pipeline {
                 sh '''
                     pip install flake8
                     echo "Running strict syntax analysis..."
-                    flake8 . --count --select=E9,F63,F72,F82 --show-source --statistics
+                    flake8 . --exclude=venv,.venv,env,.env --count --select=E9,F63,F72,F82 --show-source --statistics
                     echo "Running style and complexity checks..."
                     flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
                     '''
