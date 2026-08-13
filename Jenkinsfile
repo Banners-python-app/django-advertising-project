@@ -5,10 +5,10 @@ pipeline {
         timestamps()        // show timestamps in console log, ensure plugin is installed
         disableConcurrentBuilds()
     }
-    parameters {
+    //parameters {
        // booleanParam(name: 'RUN_SLOW_TEST', defaultValue: false)
        // string(name: 'TARGET', defaultValue: 'local', description: 'Build target label')
-    }
+    //}
     environment {
         PATH = "${WORKSPACE}/venv/bin:${env.PATH}"
         PIP_CACHE_DIR = "/tmp/jenkins-pip-cache/${env.JOB_NAME}"  // pip will down here so we can reuse
@@ -108,11 +108,5 @@ pipeline {
                 }
             }
         }
-        
-    post{
-        always {
-            echo "SCM Pipeline finished: ${currentBuild.currentResult}"
-        }
     }
-}
 }
