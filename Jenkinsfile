@@ -33,7 +33,7 @@ pipeline {
 
                 sh '''
                     echo "Setting up Python Virt Env..."
-                    sudo apt install python3.14-venv
+                    pip install python3.14-venv
                     if [ ! -d "venv" ]; then 
                         python3 -m venv venv
                     fi 
