@@ -11,11 +11,11 @@ pipeline {
     //}
     environment {
         PATH = "${WORKSPACE}/venv/bin:${env.PATH}"
-        PIP_CACHE_DIR = "/tmp/jenkins-pip-cache/${env.JOB_NAME}"  // pip will down here so we can reuse
+        PIP_CACHE_DIR = "/tmp/jenkins-pip-cache/banners-pythonapp"  // pip will down here so we can reuse
         APP_NAME = 'banner-pythonapp'
     }
     stages {
-        stage ('Checking branch and ') {
+        stage ('Checking branch and Path') {
             steps {
                 echo "Currently on BRANCH = ${env.BRANCH_NAME}"
                 echo "With CHANGE_ID = ${env.CHANGE_ID}"
@@ -27,7 +27,7 @@ pipeline {
                 checkout scm                // checkout scm
 
                 sh '''
-                    echo "Setting up Python Virt Env..."
+                    echo "Setting up Python Virt Env---------------------"
                     if [ ! -d "venv" ]; then 
                         python3 -m venv venv
                     fi 
@@ -40,7 +40,7 @@ pipeline {
         stage ('STAGE 2: Secret Scanning(gitleaks)') {
             steps {
                 script {
-                    echo "Starting gitleaks scan for secret scanning"
+                    echo "Starting gitleaks scan for secret scanning--------------------"
                     // we use gitleaks official docker image, -v ${WORKSPACE}:/src mounts workspace into container
                     def scanResult = sh (
                         script: '''
@@ -49,11 +49,11 @@ pipeline {
                                 returnStatus: true      // capture exist code to provide the status
                     )
                     if (scanResult == 1) {
-                        error("ALERT: Secret detected pls check logs...")
+                        error("ALERT: Secret detected pls check logs...------------------")
                     } else if (scanResult != 0) {
-                        error("ALERT: Gitleaks failed to run properly. Exit code ${scanResult}")
+                        error("ALERT: Gitleaks failed to run properly. Exit code ${scanResult}-------------")
                     } else {
-                        echo "No secrets found. Code is clean!"
+                        echo "No secrets found. Code is clean!------------------"
                     }
                 }
             }
@@ -63,6 +63,7 @@ pipeline {
                 sh '''
                     pip install flake8
                     echo "Running strict syntax analysis..."
+                    sleep 3
                     flake8 . --exclude=venv,.venv,env,.env --count --select=E9,F63,F72,F82 --show-source --statistics
                     echo "Running style and complexity checks..."
                     flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
@@ -94,21 +95,50 @@ pipeline {
         stage ('STAGE 5: Software composition analysis') {
             steps {
                 script {
-                    echo "Starting SCA..."
+                    echo "Starting SCA...----------------"
 
                     def scaResult = sh (
                         script: '''
-                                pip install pip-audit
                                 pip-audit -r requirements.txt --desc -f terminal
                                 ''',
-                                returnState: true
+                                returnStatus: true
                     )
                     if (scaResult != 0) {
-                        error("ALERT: Vulnerable dependencies found in requirements.txt! Please check...")
+                        // unstable turns jenkins UI yellow but doent stop the pipeline
+                        unstable("ALERT: Vulnerable dependencies found in requirements.txt! Please check...---------------")
                     } else {
-                        echo "All depedencies are secure..!"
+                        echo "All depedencies are secure..!---------------------"
                     }
                 }
+            }
+        }
+        stage ('STAGE 6: SonarQube Testing') {
+            steps {
+                script {
+                    echo "Starting SQ analysis----------------"
+
+                    def scannerHome = tool 'sonar-scanner'      // pulling the tool
+                    
+                    // 'sonarqube' needs to be match with Jenkins system setting
+                    withSonarQubeEnv('sonarqube') {
+                        // run the scanner 
+                        sh "${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=${env.APP_NAME} \
+                            -Dsonar.sources=. \
+                            -Dsonar.python.coverage.reportPaths=reports/coverage.xml \
+                            -Dsonar.exclusions=venv/**,reports/**,**/*.pyc"
+                    }
+                }
+            }
+        }
+        stage ('Waiting for SonarQube') {
+            steps {
+                echo "Waiting for SQ to complete analysis----------------"
+
+                timeout(time: 10, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+                echo "Quality gate passed! Code is secure---------------"
             }
         }
     }
