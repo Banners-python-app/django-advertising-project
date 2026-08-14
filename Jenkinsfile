@@ -13,11 +13,6 @@ pipeline {
         PATH = "${WORKSPACE}/venv/bin:${env.PATH}"
         PIP_CACHE_DIR = "/tmp/jenkins-pip-cache/${env.JOB_NAME}"  // pip will down here so we can reuse
         APP_NAME = 'banner-pythonapp'
-        DEBUG = credentials('DEBUG')
-        SECRET_KEY = credentials('SECRET_KEY')
-        DATABASE_URL = credentials('DATABASE_URL')
-        BLOB_READ_WRITE_TOKEN = credentials('BLOB_READ_WRITE_TOKEN')
-        BLOB_STORE_ID = credentials('BLOB_STORE_ID')
     }
     stages {
         stage ('Checking branch and ') {
@@ -75,12 +70,18 @@ pipeline {
             }
         }
         stage ('STAGE 4: Unit test & code coverage') {
+            environment {
+                DEBUG = credentials('DEBUG')
+                SECRET_KEY = credentials('SECRET_KEY')
+                DATABASE_URL = credentials('DATABASE_URL')
+                BLOB_READ_WRITE_TOKEN = credentials('BLOB_READ_WRITE_TOKEN')
+                BLOB_STORE_ID = credentials('BLOB_STORE_ID')
+            }
             steps {
                     // we alreay using pytest.ini file for xml report generation
                 sh '''
-                    pip install pytest
                     sleep 3
-                    pytest .
+                    pytest . --junitxml=reports/junit.xml
                    '''
             }
             post {
