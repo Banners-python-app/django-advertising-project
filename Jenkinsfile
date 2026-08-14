@@ -99,7 +99,7 @@ pipeline {
 
                     def scaResult = sh (
                         script: '''
-                                pip-audit -r requirements.txt --desc -f terminal
+                                pip-audit -r requirements.txt --desc on -f columns
                                 ''',
                                 returnStatus: true
                     )
