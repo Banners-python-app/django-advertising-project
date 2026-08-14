@@ -78,6 +78,8 @@ pipeline {
             steps {
                     // we alreay using pytest.ini file for xml report generation
                 sh '''
+                    pip install pytest
+                    sleep 3
                     pytest .
                    '''
             }
