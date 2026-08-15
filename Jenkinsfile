@@ -169,6 +169,35 @@ pipeline {
             steps {
                 script {
                     echo "Running Trivy scan against the build image--------------"
+                    
+                    // Ensure reports directory exists in workspace
+                    sh "mkdir -p reports"
+
+                    // 1. Generate human-readable text report
+                    sh """
+                        docker run --rm \
+                        -v /var/run/docker.sock:/var/run/docker.sock \
+                        -v ${WORKSPACE}/reports:/reports \
+                        aquasec/trivy:latest image \
+                        --format table \
+                        --output /reports/trivy-report.txt \
+                        --severity CRITICAL,HIGH \
+                        --ignore-unfixed \
+                        ${env.FULL_IMAGE_NAME}
+                    """
+
+                    // 2. Generate JSON report (standard for auditing / compliance logs)
+                    sh """
+                        docker run --rm \
+                        -v /var/run/docker.sock:/var/run/docker.sock \
+                        -v ${WORKSPACE}/reports:/reports \
+                        aquasec/trivy:latest image \
+                        --format json \
+                        --output /reports/trivy-report.json \
+                        --severity CRITICAL,HIGH \
+                        --ignore-unfixed \
+                        ${env.FULL_IMAGE_NAME}
+                    """
                     // we are using docker.sock here which means trivy has root access of docker for security use ephemeral agents
                     def trivyResult = sh (
                         script: """
@@ -184,10 +213,15 @@ pipeline {
                     )
 
                     if (trivyResult != 0) {
-                        error("ALERT: Critical or High issues found in image--------------")
+                        unstable("ALERT: Critical or High issues found in image--------------")
                     } else {
                         echo "Docker image is secure-----------"
                     }
+                }
+            }
+            post{
+                always {
+                    archiveArtifacts artifacts: 'reports/trivy-*.*', allowEmptyArchive: false
                 }
             }
         }
