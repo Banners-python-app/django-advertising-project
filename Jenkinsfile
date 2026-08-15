@@ -156,7 +156,10 @@ pipeline {
 
                     env.FULL_IMAGE_NAME = "${ECR_REGISTRY}/${env.REPO_NAME}:${imageTag}"
 
-                    sh "docker build -t ${env.FULL_IMAGE_NAME} ."
+                    sh """
+                        export DOCKER_BUILDKIT=1
+                        docker build -t ${env.FULL_IMAGE_NAME} .
+                        """
                 }
             }
         }
