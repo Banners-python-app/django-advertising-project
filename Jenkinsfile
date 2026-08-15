@@ -13,7 +13,6 @@ pipeline {
         PATH = "${WORKSPACE}/venv/bin:${env.PATH}"
         PIP_CACHE_DIR = "/tmp/jenkins-pip-cache/banners-pythonapp"  // pip will down here so we can reuse
         APP_NAME = 'banner-pythonapp'
-        AWS_ACCOUNT_ID = credentials('AWS_ID')
         AWS_REGION = "us-east-1"
     }
     stages {
@@ -150,8 +149,8 @@ pipeline {
                 DATABASE_URL = credentials('DATABASE_URL')
                 BLOB_READ_WRITE_TOKEN = credentials('BLOB_READ_WRITE_TOKEN')
                 BLOB_STORE_ID = credentials('BLOB_STORE_ID') 
-
-                ECR_REGISTRY = "${env.AWS_ACCOUNT_ID}.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
+                AWS_AC_ID = "059325865650"
+                ECR_REGISTRY = "${env.AWS_AC_ID}.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
                 REPO_NAME = "banners-pythonapp-repo"
             }
             steps {
