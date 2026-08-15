@@ -144,9 +144,6 @@ pipeline {
             //}
         //}
         stage ('STAGE 7: Building image') {
-            when{
-                buildingTag()
-            }
             environment {
                 DEBUG = credentials('DEBUG')
                 SECRET_KEY = credentials('SECRET_KEY')
