@@ -151,7 +151,7 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker image--------------"
-
+                    // collecting git commit SHA
                     def gitCommit = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                     // if TAG_NAME ? then take TAG_NAME else take GIT_COMMIT sha
                     def imageTag = env.TAG_NAME ? env.TAG_NAME : gitCommit
