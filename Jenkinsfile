@@ -225,5 +225,38 @@ pipeline {
                 }
             }
         }
+        stage ('STAGE 9: Push to ECR') {
+            when{
+                anyOf {
+                    tag "*"
+                    //branch "dev"
+                }
+            }
+            environment { 
+                AWS_AC_ID = "059325865650"
+                ECR_REGISTRY = "${env.AWS_AC_ID}.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
+                REPO_NAME = "banners-pythonapp-repo"
+            }
+            steps{
+                script {
+                    echo "Tag detected...!--------------"
+                    echo "Authenticating with ECR------------"
+
+                    sh """
+                        aws ecr get-login-password --region ${env.AWS_REGION} | docker login --username AWS --password-stdin ${env.ECR_REGISTRY}
+                        """
+                    echo "Pushing the image to ECR"
+                    env.FULL_IMAGE_NAME = "${env.ECR_REGISTRY}/${env.REPO_NAME}:${env.TAG_NAME}"
+                    def pushStatus = sh(
+                        script: "docker push ${env.FULL_IMAGE_NAME}", returnStatus: true
+                    ) 
+                    if (pushStatus != 0) {
+                        error("Error in pushing see logs--------------")
+                    } else {
+                        echo "Image successfully passed"
+                    }
+                }
+            }
+        }
     }
 }
