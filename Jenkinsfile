@@ -13,6 +13,8 @@ pipeline {
         PATH = "${WORKSPACE}/venv/bin:${env.PATH}"
         PIP_CACHE_DIR = "/tmp/jenkins-pip-cache/banners-pythonapp"  // pip will down here so we can reuse
         APP_NAME = 'banner-pythonapp'
+        AWS_ACCOUNT_ID = credentials('AWS_ID')
+        AWS_REGION = "us-east-1"
     }
     stages {
         stage ('Checking branch and Path') {
@@ -112,6 +114,7 @@ pipeline {
                 }
             }
         }
+        '''
         stage ('STAGE 6: SonarQube Testing') {
             steps {
                 script {
@@ -139,6 +142,59 @@ pipeline {
                     waitForQualityGate abortPipeline: true
                 }
                 echo "Quality gate passed! Code is secure---------------"
+            }
+        }
+        '''
+        stage ('STAGE 7: Building image') {
+            when{
+                buildingTag()
+            }
+            environment {
+                DEBUG = credentials('DEBUG')
+                SECRET_KEY = credentials('SECRET_KEY')
+                DATABASE_URL = credentials('DATABASE_URL')
+                BLOB_READ_WRITE_TOKEN = credentials('BLOB_READ_WRITE_TOKEN')
+                BLOB_STORE_ID = credentials('BLOB_STORE_ID') 
+
+                ECR_REGISTRY = "${env.AWS_ACCOUNT_ID}.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
+                REPO_NAME = "banners-pythonapp-repo"
+            }
+            steps {
+                script {
+                    echo "Building Docker image--------------"
+                    // if TAG_NAME ? then take TAG_NAME else take GIT_COMMIT sha
+                    def imageTag = env.TAG_NAME ? env.TAG_NAME : env.GIT_COMMIT.take(7)
+
+                    env.FULL_IMAGE_NAME = "${ECR_REGISTRY}/${env.REPO_NAME}:${imageTag}"
+
+                    sh "docker build -t ${env.FULL_IMAGE_NAME} ."
+                }
+            }
+        }
+        stage ('STAGE 8: Trivy Scan') {
+            steps {
+                script {
+                    echo "Running Trivy scan against the build image--------------"
+
+                    def trivyResult = sh (
+                        script: """
+                            docker run --rm \
+                            -v /var/run/docker.sock:/var/run/docker.sock \
+                            aquasec/trivy:latest image \
+                            --severity CRITICAL,HIGH \
+                            --exit-code 1 \
+                            --ignore-unfixed \
+                            ${env.FULL_IMAGE_NAME}
+                            """,
+                            returnStatus: true
+                    )
+
+                    if (trivyResult != 0) {
+                        error("ALERT: Critical or High issues found in image--------------")
+                    } else {
+                        echo "Docker image is secure-----------"
+                    }
+                }
             }
         }
     }
