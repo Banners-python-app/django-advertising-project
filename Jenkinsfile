@@ -114,37 +114,35 @@ pipeline {
                 }
             }
         }
-        '''
-        stage ('STAGE 6: SonarQube Testing') {
-            steps {
-                script {
-                    echo "Starting SQ analysis----------------"
+        //stage ('STAGE 6: SonarQube Testing') {
+          //  steps {
+            //    script {
+              //      echo "Starting SQ analysis----------------"
 
-                    def scannerHome = tool 'sonar-scanner'      // pulling the tool
+                //    def scannerHome = tool 'sonar-scanner'      // pulling the tool
                     
                     // 'sonarqube' needs to be match with Jenkins system setting
-                    withSonarQubeEnv('sonarqube') {
+                  //  withSonarQubeEnv('sonarqube') {
                         // run the scanner 
-                        sh "${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=${env.APP_NAME} \
-                            -Dsonar.sources=. \
-                            -Dsonar.python.coverage.reportPaths=reports/coverage.xml \
-                            -Dsonar.exclusions=venv/**,reports/**,**/*.pyc"
-                    }
-                }
-            }
-        }
-        stage ('Waiting for SonarQube') {
-            steps {
-                echo "Waiting for SQ to complete analysis----------------"
+                    //    sh "${scannerHome}/bin/sonar-scanner \
+                      //      -Dsonar.projectKey=${env.APP_NAME} \
+                        //    -Dsonar.sources=. \
+                        //    -Dsonar.python.coverage.reportPaths=reports/coverage.xml \
+                        //    -Dsonar.exclusions=venv/**,reports/**,**/*.pyc"
+                    //}
+                //}
+            //}
+        //}
+        //stage ('Waiting for SonarQube') {
+          //  steps {
+            //    echo "Waiting for SQ to complete analysis----------------"
 
-                timeout(time: 10, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-                echo "Quality gate passed! Code is secure---------------"
-            }
-        }
-        '''
+              //  timeout(time: 10, unit: 'MINUTES') {
+               //     waitForQualityGate abortPipeline: true
+              //  }
+              //  echo "Quality gate passed! Code is secure---------------"
+            //}
+        //}
         stage ('STAGE 7: Building image') {
             when{
                 buildingTag()
@@ -175,7 +173,7 @@ pipeline {
             steps {
                 script {
                     echo "Running Trivy scan against the build image--------------"
-
+                    // we are using docker.sock here which means trivy has root access of docker for security use ephemeral agents
                     def trivyResult = sh (
                         script: """
                             docker run --rm \
