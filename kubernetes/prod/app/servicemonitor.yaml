@@ -1,0 +1,31 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: banners-django-monitor
+  namespace: banners-main-app
+  labels:
+    environment: production
+    # CRITICAL: This label must match what your Prometheus Operator is looking for.
+    # Often it is 'release: prometheus' or 'release: kube-prometheus-stack'.
+    release: prometheus 
+spec:
+  # 1. The Target: How to find your application
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: banners-main-app-deployments
+      environment: production
+
+  # 2. Endpoint Configuration: How to scrape the data
+  endpoints:
+    - port: http          # Must exactly match the 'name' of the port in your Service YAML
+      path: /metrics      # The URL path Django exposes metrics on
+      interval: 15s       # Scrape every 15 seconds (standard for high-traffic apps)
+      scrapeTimeout: 10s  # If Django takes longer than 10s to respond, mark it as down
+      
+      # 3. ENTERPRISE FINOPS: Metric Relabeling (Cardinality Control)
+      # Python/Django exposes hundreds of garbage-collection and internal metrics by default.
+      # Storing these in Prometheus costs money. We drop metrics we don't use for alerts.
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: 'python_gc_.*|python_info|go_.*'
+          action: drop

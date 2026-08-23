@@ -1,0 +1,19 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: banners-django-pdb
+  namespace: banners-main-app
+  labels:
+    environment: production
+spec:
+  # 1. The Guardrail: Never let more than 1 pod be taken down at a time
+  maxUnavailable: 1
+  
+  # 2. If a pod is already crashing and useless, just kill it and let the node drain.
+  # (Standard in Kubernetes v1.27+ for production clusters)
+  unhealthyPodEvictionPolicy: AlwaysAllow
+
+  # 3. The Target: Must match your Deployment's labels perfectly
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: banners-main-app-deployments

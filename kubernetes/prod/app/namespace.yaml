@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: banners-main-app
+  labels:
+    environment: production
+    # Standard Kubernetes/ArgoCD Tracking
+    app.kubernetes.io/name: django-backend
+    app.kubernetes.io/part-of: banners-main-app
+    # Security: Pod Security Admission (PSA)  (only for namespace)
+    # 'baseline' prevents privileged (root-level) host access and restrict will warn devs
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/warn: restricted
+  annotations:
+    # ownership and finops tracking
+    support/team: "backend-engineering"
+    support/slack-channel: "#alerts-banner-prod"
+    billing/cost-center: "cc-python-apps"
+
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata: 
+  name: compute-quota
+  namespace: banners-main-app
+spec:
+  hard:
+    pods: "50"    # max pods allowed in this ns
+    requests.cpu: "10"
+    requests.memory: "20Gi"
+    limits.cpu: "20"
+    limits.memory: "40Gi"
+
+    # max no of pvc and total storage
+    count/persistentvolumeclaims: "10"
+    requests.storage: "100Gi"
+  
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-resource-limits
+  namespace: banners-main-app
+spec:
+  limits:
+  - type: Container
+    # If a developer forgets to set resources, inject these defaults
+    defaultRequest:
+      cpu: 100m
+      memory: 256Mi
+    default:
+      cpu: 500m
+      memory: 512Mi
+    
+    # Enforce minimums and maximums for a single container
+    min:
+      cpu: 50m
+      memory: 128Mi
+    max:
+      cpu: 2000m
+      memory: 4Gi

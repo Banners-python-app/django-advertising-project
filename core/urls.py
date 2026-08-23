@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 from orders.views import admin_report_dashboard
 
 urlpatterns = [
+    path('', include('django_prometheus.urls')),
     path('admin/reports/', admin_report_dashboard, name='admin_reports'),
     path('admin/', admin.site.split_urls if hasattr(admin.site, 'split_urls') else admin.site.urls),
     path('orders/', include('orders.urls')),

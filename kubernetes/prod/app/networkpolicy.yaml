@@ -1,0 +1,64 @@
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: banner-app-np
+  namespace: banners-main-app
+  labels:
+    environment: production
+    app.kubernetes.io/name: banners-main-app-deployments
+    app.kubernetes.io/part-of: banners-main-app
+spec: 
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: banners-main-app-deployments
+  policyTypes:
+    - Ingress
+    - Egress
+  
+  # allowing only traffic on 8080
+  ingress:
+    # allowing traffic from outside the cluster on 8080
+    # using namespaceselector as ingress-nginx is in another ns
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            #get labels - kubectl get namespace ingress-nginx --show-labels
+            kubernetes.io/metadata.name: ingress-nginx      #selected ingress-controller namespace
+        podSelector:
+          matchLabels:
+            #get lebsls -  kubectl get pods -n ingress-nginx --show-labels 
+            app.kubernetes.io/component: controller         #selected ingress-controller pod
+      ports:
+        - protocol: TCP
+          port: 8080
+
+  egress:
+    # allowing DNS
+    - to:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: kube-system
+        podSelector:
+          matchLabels:
+            k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # Allow internal traffic to AWS RDS
+    - to:
+      - ipBlock:
+          cidr: 192.168.0.0/16
+      ports:  
+        - port: 5432
+          protocol: TCP
+    # allow external traffic to internet (s3, payment API, etc)
+    - to:
+      - ipBlock:
+          cidr: 0.0.0.0/0
+      ports:  
+        - port: 443
+          protocol: TCP

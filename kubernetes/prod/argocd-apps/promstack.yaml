@@ -1,0 +1,180 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prometheus-stack
+  namespace: argocd
+  # this will ensure if we delete this app then all resources under this will delete first and then this app will remove
+  finalizers: 
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    # Forces this app to apply BEFORE admin and ecom
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: banner-python-prod     # this defines logical grouping inside argocd
+  source:
+    repoURL: 'https://prometheus-community.github.io/helm-charts'
+    targetRevision: '87.15.1'
+    chart: kube-prometheus-stack
+    helm: 
+      values: |
+        prometheus:
+          ingress:
+            enabled: true
+            ingressClassName: nginx
+            annotations:
+              nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+            hosts:
+              - prometheus.mycompany.test
+            paths:
+              - /
+            pathType: Prefix
+          prometheusSpec: 
+            # Added retention policy. Delete metrics older than 15 days.
+            retention: 15d
+            nodeSelector: 
+              workload-type: monitoring
+            tolerations:
+              - key: "dedicated"
+                operator: "Equal"
+                value: "monitoring"
+                effect: "NoSchedule"
+            resources:
+              requests:
+                memory: 512Mi
+                cpu: 100m
+              limits: 
+                memory: 750Mi
+                cpu: 500m
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: banner-gp3-sc
+                  accessModes:
+                    - ReadWriteOnce
+                  resources:
+                    requests:
+                      storage: 10Gi
+
+        grafana:
+          nodeSelector:
+            workload-type: monitoring
+          tolerations:
+            - key: "dedicated"
+              operator: "Equal"
+              value: "monitoring"
+              effect: "NoSchedule"
+          persistence:
+            enabled: true
+            storageClassName: banner-gp3-sc
+            size: 10Gi
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 100m
+            limits:
+              memory: 512Mi
+              cpu: 300m
+          ingress:
+            enabled: true
+            ingressClassName: nginx
+            annotations: 
+              nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+            hosts:  
+              - grafana.mycompany.test
+        alertmanager:
+          ingress:
+            enabled: true
+            ingressClassName: nginx
+            annotations: 
+              nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+            hosts:  
+              - alerts.mycompany.test
+            paths: 
+              - /
+            pathType: Prefix
+          alertmanagerSpec:
+            nodeSelector:
+              workload-type: monitoring
+            tolerations:
+              - key: "dedicated"
+                operator: "Equal"
+                value: "monitoring"
+                effect: "NoSchedule"
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                cpu: 200m
+                memory: 256Mi
+            storage:
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: banner-gp3-sc
+
+                  accessModes:
+                    - ReadWriteOnce
+
+                  resources:
+                    requests:
+                      storage: 5Gi
+                        
+        prometheusOperator:
+          nodeSelector:
+            workload-type: monitoring
+          tolerations:
+            - key: "dedicated"
+              operator: "Equal"
+              value: "monitoring"
+              effect: "NoSchedule"
+          resources:  
+            requests:
+              memory: 150Mi
+              cpu: 100m
+            limits:
+              memory: 300Mi
+              cpu: 300m
+        kube-state-metrics:
+          nodeSelector:
+            workload-type: monitoring
+          tolerations:
+            - key: "dedicated"
+              operator: "Equal"
+              value: "monitoring"
+              effect: "NoSchedule"        
+        prometheus-node-exporter:
+          tolerations:
+            # ignore all taints run on every node
+            - operator: "Exists" 
+            
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: monitoring
+  # FIX: Added ignoreDifferences to prevent ArgoCD from fighting the Prom Operator
+  ignoreDifferences:
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+      jsonPointers:
+        - /webhooks
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      jsonPointers:
+        - /webhooks
+  syncPolicy:
+    automated:  
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      # FIX 1: Bypasses the 262144 byte annotation limit for massive CRDs
+      - ServerSideApply=true
+      # FIX 2: If a CRD is stuck or too big, ArgoCD will replace it cleanly
+      - Replace=true
+      # FIX 3: Forces ArgoCD to manage the CRDs directly, bypassing Helm's limitations
+      - RespectIgnoreDifferences=true
+    retry:     # this will help when temp cluster issues when deployments happening like network issue/api timeouts
+      limit: 5    # retrying 5 times before giving up
+      backoff:    
+        duration: 5s    # after 1st failure argocd wait 5s then try next retry 
+        factor: 2       # multiplies the duration after each failure * 2
+        maxDuration: 3m # hard cap on waiting time means if factor calculation demands longer wait then argocd never wait more than 3 mins bet retries 

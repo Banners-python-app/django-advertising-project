@@ -43,6 +43,7 @@ ALLOWED_HOSTS = ['*','localhost','127.0.0.1','.vercel.app','shirdihoarding.in']
 # Application definition
 
 INSTALLED_APPS = [
+    'django_prometheus',
     'unfold',
     "unfold.contrib.forms",
     'django.forms',
@@ -66,6 +67,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
