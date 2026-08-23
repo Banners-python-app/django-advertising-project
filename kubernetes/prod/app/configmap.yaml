@@ -21,4 +21,4 @@ data:
     timeout = 120
     accesslog = "-"
     errorlog = "-"
-    worker_class = "gevent"
+    worker_class = "gthread"
