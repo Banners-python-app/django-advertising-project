@@ -64,7 +64,7 @@ spec:
               app.kubernetes.io/name: banners-main-app-deployments
       containers:
         - name: banners-django-container
-          image: banners-pythonapp-repo:v1.0.0
+          image: 059325865650.dkr.ecr.us-east-1.amazonaws.com/ban-ecr:v1.0.0
           # graceful shutbdown hook
           lifecycle:
             preStop:  
