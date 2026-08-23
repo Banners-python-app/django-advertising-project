@@ -1,0 +1,22 @@
+# this file must be created and applied first then root file. 
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: banner-python-prod # Must match the project name in your Root App
+  namespace: argocd
+spec:
+  description: "Production project for Banner Python applications"
+  
+  # 1. SECURITY: Only allow pulling code from your specific GitHub repository
+  sourceRepos:
+  - 'https://github.com/Banners-python-app/django-advertising-project.git'
+  
+  # 2. DESTINATIONS: Allow deploying to any namespace inside the local EKS cluster
+  destinations:
+  - namespace: '*'
+    server: 'https://kubernetes.default.svc'
+  
+  # 3. WHITELIST: Allow the App of Apps to create cluster-scoped resources (like Namespaces or CRDs)
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
