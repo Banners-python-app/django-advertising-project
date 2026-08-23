@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata: 
+  name: banner-service
+  namespace: banners-rds-sync
+  labels:
+    environment: production
+    app.kubernetes.io/name: banners-main-app-deployments
+    app.kubernetes.io/part-of: banners-main-app
+  annotations:
+    # This prevents cross-AZ traffic whenever possible, saving massive AWS Data Transfer costs.
+    service.kubernetes.io/topology-mode: Auto
+    # Optional: Prometheus scraping annotations if you aren't using ServiceMonitors
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+
+spec:
+  type: ClusterIP
+  selector:
+    environment: production
+    app.kubernetes.io/name: banners-main-app-deployments
+  ports:  
+    - name: http
+      port: 80                # service port
+      targetPort: 8080        # pod port where app code is listening inside container
+      protocol: TCP

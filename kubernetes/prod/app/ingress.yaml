@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: banner-ingress
+  namespace: banners-main-app
+  labels:
+    environment: production
+    app.kubernetes.io/name: banners-main-app-deployments
+    app.kubernetes.io/part-of: banners-main-app
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    # 2. Performance & Security Tuning
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"      # Allow larger uploads (e.g., images/banners)
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"   # Give Django time to process heavy requests
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+
+spec: 
+  rules:
+    - host: app.banners.com  # Replace with your actual domain or IP testing URL
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: banner-service
+                port:
+                  number: 80

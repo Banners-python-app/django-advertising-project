@@ -1,0 +1,59 @@
+# remember that this required Metric Server to be installed on EKS cluster then only it will work
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: banners-django-hpa
+  namespace: banners-main-app
+  labels:
+    environment: production
+spec:
+  # 1. The Target: What are we scaling?
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: banners-main-app-deployments
+    
+  # 2. The Boundaries: Never go below 2 (for HA), never exceed 10 (FinOps limits)
+  minReplicas: 2
+  maxReplicas: 10
+  
+  # 3. The Triggers: When do we scale?
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 75  # Scale when average CPU hits 75% of the requested amount
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80  # Scale when average Memory hits 80%
+
+  # 4. ENTERPRISE ENGINEERING: Scaling Behaviors
+  behavior:
+    # SCALE UP: Fast and Aggressive
+    scaleUp:
+      # 0 seconds means react instantly to spikes
+      stabilizationWindowSeconds: 0
+      policies:
+        # Add up to 4 pods every 15 seconds, OR double the current pods (100%), whichever is higher
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        - type: Pods
+          value: 4
+          periodSeconds: 15
+      selectPolicy: Max # Tells Kubernetes to use the most aggressive policy above
+
+    # SCALE DOWN: Slow and Cautious
+    scaleDown:
+      # Wait 5 minutes (300s) after a spike passes before starting to remove pods
+      stabilizationWindowSeconds: 300
+      policies:
+        # Only remove 10% of pods every 60 seconds (prevents sudden capacity drops)
+        - type: Percent
+          value: 10
+          periodSeconds: 60

@@ -1,0 +1,99 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nginx-ingress
+  namespace: argocd
+  # this will ensure if we delete this app then all resources under this will delete first and then this app will remove
+  finalizers: 
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    # Forces this app to apply BEFORE admin and ecom
+    argocd.argoproj.io/sync-wave: "-1"
+    
+spec:
+  project: banner-python-prod     # this defines logical grouping inside argocd
+  source:
+    repoURL: 'https://kubernetes.github.io/ingress-nginx'
+    chart: ingress-nginx
+    targetRevision: 4.10.1 # Lock the version for production stability
+    helm:
+      values: |
+        controller:
+          # 1. OBSERVABILITY: Enable Prometheus metrics
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+
+          # 2. HIGH AVAILABILITY: Force Pods into different Availability Zones
+          topologySpreadConstraints:
+            - maxSkew: 1      # maximum allowed difference in the number of pods between any two zones
+              topologyKey: topology.kubernetes.io/zone      # look at AZ 
+              whenUnsatisfiable: ScheduleAnyway             # k8 will refuse to schedule the pod if it cannot find the node
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: ingress-nginx
+            #- maxSkew: 1
+            #  topologyKey: kubernetes.io/hostname           # look for nodes
+            #  whenUnsatisfiable: DoNotSchedule
+            #  labelSelector:
+            #    matchLabels:
+            #      app.kubernetes.io/name: ingress-nginx
+
+          # 3. CONNECTION DRAINING: Prevent 502 errors during pod deletion
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 15; /usr/local/nginx/sbin/nginx -c /etc/nginx/nginx.conf -s quit; while pgrep -x nginx; do sleep 1; done"]
+          terminationGracePeriodSeconds: 60
+
+          # using HPA to scale under load
+          autoscaling:
+            enabled: true
+            minReplicas: 2
+            maxReplicas: 3
+            targetCPUUtilizationPercentage: 70
+            targetMemoryUtilizationPercentage: 80
+          
+          # resource limits
+          resources:
+            requests:
+                cpu: 100m
+                memory: 256Mi
+            limits:
+                cpu: 1000m
+                memory: 1024Mi
+            
+          # pod disruption budget
+          podDisruptionBudget:
+            enabled: true
+            minAvailable: 1
+
+          service:
+            enableHttp: true
+            enableHttps: false
+            annotations:
+              # Tells the AWS ALB Controller to build a real Network Load Balancer
+              service.beta.kubernetes.io/aws-load-balancer-type: "external"
+              service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+              service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+              service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+              service.beta.kubernetes.io/aws-load-balancer-target-group-attributes: "deregistration_delay.timeout_seconds=30"
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: ingress-nginx
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true    # prevents errors when deploying large manifests like crds
+      - PruneLast=true      # deletes old resource if new one is healthy
+
+    retry:     # this will help when temp cluster issues when deployments happening like network issue/api timeouts
+        limit: 5    # retrying 5 times before giving up
+        backoff:    
+          duration: 5s    # after 1st failure argocd wait 5s then try next retry 
+          factor: 2       # multiplies the duration after each failure * 2
+          maxDuration: 3m # hard cap on waiting time means if factor calculation demands longer wait then argocd never wait more than 3 mins bet retries

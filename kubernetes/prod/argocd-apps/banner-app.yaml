@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: banners-main-app-argocd
+  namespace: argocd
+  # this will ensure if we delete this app then all resources under this will delete first and then this app will remove
+  finalizers: 
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    # last this app will deploy
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: banner-python-prod
+  source: 
+    repoURL: 'https://github.com/Banners-python-app/django-advertising-project.git'
+    targetRevision: dev
+    path: kubernetes/prod/app
+    directory:
+      recurse: false
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: banners-main-app
+  syncPolicy:
+    automated:        # automated deployments
+      prune: true     # deleting from git will delete from resource
+      selfHeal: true  # manual changes done then this will detect and overwrite from git
+    syncOptions:
+      - CreateNamespace=true    
+      - ServerSideApply=true    # prevents errors when deploying large manifests like crds
+      - PruneLast=true          # deletes old resource if new one is healthy
+    retry:                      # retrying when any issues in the cluster like nw issues/api timeouts
+      limit: 5                  # retry 5 times before giving up
+      backoff:
+        duration: 5s    # after 1st failure argocd wait 5s then try next retry 
+        factor: 2       # multiplies the duration after each failure * 2
+        maxDuration: 3m # hard cap on waiting time means if factor calculation demands longer wait then argocd never wait more than 3 mins bet retries            # 
+
+

@@ -1,0 +1,71 @@
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: monit-nodepool
+  labels:
+    team: devops
+    environment: production
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false
+spec: 
+  template:
+    metadata:
+      labels:   # labels applied to actual k8 nodes, useful for pod nodeselectors/affinity
+        workload-type: monitoring
+        billing-category: monit-core-infrastructure
+    spec: 
+      # adding this so only K8 cant schedule other app onto this, only tolarate pods are allowed here
+      taints:
+        - key: dedicated
+          value: monitoring
+          effect: NoSchedule
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: ec2class-prod
+
+      requirements:     # kind of servers karp allowed to create
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64"] # Standard Intel/AMD processors
+        
+        - key: kubernetes.io/os
+          operator: In
+          values: ["linux"]
+          
+        #- key: node.kubernetes.io/instance-type
+         # operator: In
+         # values: ["t3.small", "t3.micro", "c7i-flex.large"]    # ["c7i.large", "c7i.xlarge", "m7i.large", "m7i.xlarge", "c7i-flex.large"]
+          
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["on-demand"] 
+
+        # Use families instead of hardcoding "t3.small"
+        # Karpenter will automatically pick the cheapest available size that fits your Pods
+        - key: karpenter.k8s.aws/instance-category
+          operator: In
+          values: ["c", "m", "t"] 
+
+        # Enforce modern instance generations (Gen 3 or newer) for better price/performance
+        - key: karpenter.k8s.aws/instance-generation
+          operator: Gt
+          values: ["2"]
+  
+  limits:
+    cpu: "100"
+    memory: "2000Gi"
+
+  disruption:
+    consolidationPolicy: WhenEmptyOrUnderutilized
+
+    # Budgets control WHEN and HOW MANY nodes Karpenter is allowed to disrupt (kill)
+    #budgets:
+      # Rule 1: Do NOT disrupt any nodes during peak business hours (Mon-Fri, 9 AM to 5 PM UTC)
+    #  - nodes: "0"
+    #    schedule: "0 9 * * 1-5"
+    #    duration: 8h
+      
+      # Rule 2: Outside of business hours, only allow disrupting 10% of nodes at a time
+      # to ensure the application remains highly available during consolidation.
+    #  - nodes: "10%"

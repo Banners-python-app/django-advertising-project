@@ -1,0 +1,56 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: banners-django-alert-rules
+  namespace: banners-main-app
+  labels:
+    # CRITICAL: Must match your Prometheus instance's 'ruleSelector'
+    release: prometheus
+    app.kubernetes.io/name: banners-main-app-deployments
+spec:
+  groups:
+    - name: django-application-alerts
+      rules:
+        # ==========================================
+        # Alert: High HTTP 5xx Error Rate (> 5%)
+        # ==========================================
+        - alert: DjangoHighHttp5xxRate
+          # PromQL: (5xx responses per sec / total responses per sec) * 100 > 5
+          expr: |
+            (
+              sum(rate(django_http_responses_total_by_status_total{namespace="banners-main-app", status=~"5.."}[5m]))
+              /
+              sum(rate(django_http_responses_total_by_status_total{namespace="banners-main-app"}[5m]))
+            ) * 100 > 5
+          
+          # ENTERPRISE GUARDRAIL: Avoid alert fatigue
+          # Wait until the condition persists for 5 minutes before paging/alerting
+          for: 5m
+          
+          labels:
+            severity: critical
+            team: backend-engineering
+            app: django-backend
+            environment: production
+
+          annotations:
+            summary: "Django High HTTP 5xx Error Rate on {{ $labels.namespace }}"
+            description: "HTTP 5xx error rate for Django is currently at {{ $value | printf \"%.2f\" }}% over the last 5 minutes."
+            # Runbook link for on-call SREs / engineers
+            runbook_url: "https://wiki.mycompany.test/runbooks/django-500-errors"
+            dashboard_url: "https://grafana.mycompany.test/d/django-overview"
+
+        # ==========================================
+        # Alert: Pod CrashLooping / Zero Replicas Ready
+        # ==========================================
+        - alert: DjangoPodsDown
+          expr: |
+            kube_deployment_status_replicas_available{namespace="banners-main-app", deployment="banners-main-app-deployments"} == 0
+          for: 2m
+          labels:
+            severity: critical
+            team: backend-engineering
+            environment: production
+          annotations:
+            summary: "All Django Pods are down in {{ $labels.namespace }}"
+            description: "Zero ready replicas available for deployment 'banners-main-app-deployments'."

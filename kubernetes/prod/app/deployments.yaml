@@ -1,0 +1,139 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: banners-main-app-deployments
+  namespace: banners-main-app
+  labels:
+    environment: production
+    # Standard Kubernetes/ArgoCD Tracking
+    app.kubernetes.io/name: banners-main-app-deployments
+    app.kubernetes.io/part-of: banners-main-app
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1             # Spin up 1 new pod before killing an old one
+      maxUnavailable: 0       # Never let the total available pods drop below the replica count
+  selector:
+    matchLabels:
+      environment: production
+      app.kubernetes.io/name: banners-main-app-deployments
+      app.kubernetes.io/part-of: banners-main-app
+  template:
+    metadata:
+      labels:
+        environment: production
+        app.kubernetes.io/name: banners-main-app-deployments
+        app.kubernetes.io/part-of: banners-main-app
+    spec:
+      serviceAccountName: banners-app-sa
+      # prevents the cluster from automatically injecting API credentials (a token) into your pod
+      automountServiceAccountToken: false
+      # Explicitly set to complement the preStop hook (10s sleep + 20s for Nginx to finish active requests)
+      terminationGracePeriodSeconds: 30     # K8 waits for appl containers to clean up & exit gracefully before forcibly killing
+      # Karp will create a new node if other nodeaffinity is full
+      # If u used nodeSelectors then pod will go in pending state if node is full, bcaz it strictly matches with the node labels
+      affinity:                   # set of rules that allows which nodes your pods are scheduled based on labels
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:       # rules should be match to schedule pods
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: workload-type                           # nodepool labels
+                    operator: In
+                    values: 
+                      - stateless-apps
+                  - key: karpenter.sh/capacity-type              # optional
+                    operator: In
+                    values: ["on-demand"]
+
+      # Pod-level security context required by your Namespace rules (baseline, warn)
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Spread pods across diff az so if 1 az goes down then 1 will be live
+      topologySpreadConstraints:
+        - maxSkew: 1          # maximum allowed difference in the number of pods between any two zones
+          # A skew of 1 means if Zone A has 2 pods, Zone B can have at most 3 pods or at least 1 pod. It enforces a near-perfect balance
+          topologyKey: topology.kubernetes.io/zone        # look at AZs
+          whenUnsatisfiable: DoNotSchedule                # k8 will refuse to schedule if it doesnt find the node
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: banners-main-app-deployments
+      containers:
+        - name: banners-django-container
+          image: banners-pythonapp-repo:v1.0.0
+          # graceful shutbdown hook
+          lifecycle:
+            preStop:  
+              exec: 
+                command: ["/bin/sleep", "10"]
+          resources:
+            requests: 
+              memory: "128Mi"
+              cpu: "100m"
+            limits: 
+              memory: "256Mi"
+              cpu: "300m"
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+
+          env:      # required for gunicorn workers
+          - name: PROMETHEUS_MULTIPROC_DIR
+            value: /tmp/prometheus_multiproc_dir
+
+          envFrom:
+            - configMapRef:
+                name: banner-app-config
+            - secretRef:
+                name: rds-credentials
+          # 2. ADDED: Temporary write access so Nginx doesn't crash
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp-volume
+            # this vol mount coming from configmap gunicorn
+            - mountPath: /app/gunicorn.conf.py
+              subPath: gunicorn.conf.py
+              name: gunicorn-config-volume
+
+          # Gives Django up to 60 seconds (10s * 6 tries) to boot up before liveness kicks in
+          startupProbe:
+            httpGet:
+              path: /
+              port: 8080
+            failureThreshold: 6
+            periodSeconds: 10
+          
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 0  # give nginx few sec to start (startup probe handling boot time)
+            periodSeconds: 15       # check every 15 sec
+            timeoutSeconds: 3       # fail if it takes longer than 3 sec to respond
+            failureThreshold: 3     # restart container after 3 consecutive failures
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 0
+            periodSeconds: 15
+            successThreshold: 1     #mark as ready after 1 successful check
+
+      volumes:
+        - name: tmp-volume
+          emptyDir: {}
+        - name: gunicorn-config-volume
+          configMap:
+            name: django-app-config

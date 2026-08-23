@@ -1,0 +1,32 @@
+
+# ---------------------------------------------------------
+# 1. EC2NodeClass: The "Hardware" Template
+# Tells Karpenter exactly how to configure the AWS EC2 instances
+# ---------------------------------------------------------
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: ec2class-prod
+spec:
+  # The industry standard OS for EKS workloads
+  amiFamily: AL2023 
+
+  amiSelectorTerms:
+    - alias: al2023@latest
+  #instanceProfile: KarpenterNodeInstanceProfile-deb
+  
+  # IMPORTANT: This must exactly match the IAM Role name created by your Terraform module
+  role: "KarpenterNodeRole-ban-cluster" 
+  
+  # Tells Karpenter to look for subnets and SGs with this specific tag
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: "ban-cluster"
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: "ban-cluster"
+        
+  # Tag all new EC2 instances so you know Karpenter built them
+  tags:
+    Name: karpenter-provisioned-node
+    Environment: prod
