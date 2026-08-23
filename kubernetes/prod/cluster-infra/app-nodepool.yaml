@@ -52,7 +52,9 @@ spec:
     memory: "2000Gi"
 
   disruption:
+    # Enterprise Standard: Kill nodes instantly if they are empty for 1 minute
     consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidateAfter: 1m
 
     # Budgets control WHEN and HOW MANY nodes Karpenter is allowed to disrupt (kill)
     #budgets:
