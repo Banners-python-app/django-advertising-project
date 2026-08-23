@@ -16,7 +16,7 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   annotations:
-    argocd.argoproj.io/sync-wave: "1"     # deploy after the promstack
+    argocd.argoproj.io/sync-wave: "0"     # deploy after the promstack
 spec:
   project: banner-python-prod     # this defines logical grouping inside argocd
   source:
