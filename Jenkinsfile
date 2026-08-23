@@ -235,7 +235,7 @@ pipeline {
             environment { 
                 AWS_AC_ID = "059325865650"
                 ECR_REGISTRY = "${env.AWS_AC_ID}.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
-                REPO_NAME = "banners-pythonapp-repo"
+                REPO_NAME = "ban-ecr"
             }
             steps{
                 script {
