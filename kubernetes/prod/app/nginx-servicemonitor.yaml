@@ -1,0 +1,19 @@
+# kubernetes/prod/monitoring/nginx-servicemonitor.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: nginx-ingress-metrics
+  namespace: ingress-nginx
+  annotations:
+    argocd.argoproj.io/sync-wave: "2" # Applies after Prometheus is healthy
+  labels:
+    release: kube-prometheus-stack   # Must match your Prometheus serviceMonitorSelector
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ingress-nginx
+      app.kubernetes.io/component: controller
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s

@@ -23,7 +23,7 @@ spec:
           metrics:
             enabled: true
             serviceMonitor:
-              enabled: true
+              enabled: false
 
           # 2. HIGH AVAILABILITY: Force Pods into different Availability Zones
           topologySpreadConstraints:
