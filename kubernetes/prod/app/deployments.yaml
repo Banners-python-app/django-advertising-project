@@ -136,4 +136,4 @@ spec:
           emptyDir: {}
         - name: gunicorn-config-volume
           configMap:
-            name: django-app-config
+            name: banner-app-config
