@@ -56,6 +56,9 @@ spec:
                       storage: 10Gi
 
         grafana:
+          # Forces Kubernetes to release the EBS volume before starting the new pod
+          deploymentStrategy:
+            type: Recreate
           nodeSelector:
             workload-type: monitoring
           tolerations:
