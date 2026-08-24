@@ -22,5 +22,5 @@ spec:
   ports:  
     - name: http
       port: 80                # service port
-      targetPort: 8080        # pod port where app code is listening inside container
+      targetPort: 8000        # pod port where app code is listening inside container
       protocol: TCP
