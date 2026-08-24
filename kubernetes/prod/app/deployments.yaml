@@ -92,6 +92,9 @@ spec:
           env:      # required for gunicorn workers
           - name: PROMETHEUS_MULTIPROC_DIR
             value: /tmp/prometheus_multiproc_dir
+          # ADD THIS: Tell Gunicorn to write its hidden files to the writable /tmp mount
+          - name: HOME
+            value: /tmp
 
           envFrom:
             - configMapRef:
