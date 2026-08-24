@@ -25,6 +25,10 @@ spec:
   securityGroupSelectorTerms:
     - tags:
         karpenter.sh/discovery: "ban-cluster"
+    # Important: This grabs the official EKS Cluster SG so CoreDNS trusts the node!
+    # this is AWS hidden security grps
+    - tags:
+        aws:eks:cluster-name: ban-cluster
         
   # Tag all new EC2 instances so you know Karpenter built them
   tags:
