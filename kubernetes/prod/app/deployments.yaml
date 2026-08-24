@@ -109,6 +109,8 @@ spec:
             - mountPath: /app/gunicorn.conf.py
               subPath: gunicorn.conf.py
               name: gunicorn-config-volume
+            - mountPath: /tmp/prometheus_multiproc_dir
+              name: prom-volume
 
           # Gives Django up to 60 seconds (10s * 6 tries) to boot up before liveness kicks in
           startupProbe:
@@ -140,3 +142,5 @@ spec:
         - name: gunicorn-config-volume
           configMap:
             name: banner-app-config
+        - name: prom-volume
+          emptyDir: {}
