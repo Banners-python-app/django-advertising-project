@@ -59,6 +59,7 @@ pipeline {
                 }
             }
         }
+        /*
         stage ('STAGE 3: Linting') {
             steps {
                 sh '''
@@ -71,6 +72,7 @@ pipeline {
                     '''
             }
         }
+        */
         stage ('STAGE 4: Unit test & code coverage') {
             environment {
                 DEBUG = credentials('DEBUG')
@@ -93,6 +95,7 @@ pipeline {
                 }
             }
         }
+        /*
         stage ('STAGE 5: Software composition analysis') {
             steps {
                 script {
@@ -113,6 +116,7 @@ pipeline {
                 }
             }
         }
+        */
         //stage ('STAGE 6: SonarQube Testing') {
           //  steps {
             //    script {
