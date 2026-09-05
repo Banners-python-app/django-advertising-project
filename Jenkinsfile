@@ -307,7 +307,7 @@ pipeline {
 
                         # Navigate to manifests directory
                         cd kubernetes/prod/app
-                        kustomize edit set image banners-django-container=${env.FULL_IMAGE_NAME}l
+                        kustomize edit set image banners-django-container=${env.FULL_IMAGE_NAME}
 
                         git add kustomization.yaml
                         git commit -m "chore(gitops): release ${env.TAG_NAME} [skip ci]" || echo "No changes to commit"
