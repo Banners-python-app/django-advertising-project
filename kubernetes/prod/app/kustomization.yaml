@@ -3,25 +3,25 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 metadata:
   labels:
-    environment: production
     app.kubernetes.io/name: banners-main-app-deployments
     app.kubernetes.io/part-of: banners-main-app
+    environment: production
   name: banner-kustomize
   namespace: banners-main-app
 resources:
-  - alerts-prom.yaml
-  - configmap.yaml
-  - deployments.yaml
-  - externalsecrets.yaml
-  - ingress.yaml
-  - namespace.yaml
-  - networkpolicy.yaml
-  - pdb.yaml
-  - podautoscaler.yaml
-  - service.yaml
-  - serviceaccount.yaml
-  - servicemonitor.yaml
+- alerts-prom.yaml
+- configmap.yaml
+- deployments.yaml
+- externalsecrets.yaml
+- ingress.yaml
+- namespace.yaml
+- networkpolicy.yaml
+- pdb.yaml
+- podautoscaler.yaml
+- service.yaml
+- serviceaccount.yaml
+- servicemonitor.yaml
 images:
 - name: banners-django-container
   newName: 059325865650.dkr.ecr.us-east-1.amazonaws.com/ban-ecr
-  newTag: v1.0.0
+  newTag: v1.1.0l
