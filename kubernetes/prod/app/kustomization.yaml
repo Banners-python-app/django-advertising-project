@@ -24,4 +24,4 @@ resources:
 images:
 - name: banners-django-container
   newName: 059325865650.dkr.ecr.us-east-1.amazonaws.com/ban-ecr
-  newTag: v1.1.0l
+  newTag: v1.1.0
