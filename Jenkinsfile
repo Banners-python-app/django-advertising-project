@@ -258,5 +258,62 @@ pipeline {
                 }
             }
         }
+
+        stage('STAGE 10: Update Manifest') {
+            when{
+                anyOf {
+                    tag "*"
+                    // branch 'dev'
+                } 
+            }
+            environment {
+                AWS_AC_ID = "059325865650"
+                ECR_REGISTRY = "${env.AWS_AC_ID}.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
+                REPO_NAME = "ban-ecr"   
+            }
+            steps{
+                script {
+                    echo "Updating K8 manifest------------------"
+                    env.FULL_IMAGE_NAME = "${env.ECR_REGISTRY}/${env.REPO_NAME}:${env.TAG_NAME}"
+                    // using GH Apps
+                    withCredentials([usernamePassword(
+                        credentialsId: 'github-app-banners-id',
+                        // contains token/app id
+                        usernameVariable: 'GH_APP_USER',
+                        // injects temp token            
+                        passwordVariable: 'GH_APP_TOKEN'
+                    )])
+
+                    sh """
+                        # Download Kustomize binary if not present
+                        if ! command -v kustomize &> /dev/null; then
+                            curl "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
+                            export PATH="\${WORKSPACE}:\${PATH}"
+                        fi
+                        # Navigate to manifests directory
+                        cd kubernetes/prod/app
+                        kustomize edit set image banners-django-container=${env.FULL_IMAGE_NAME}
+                        git config user.name "billsaathi-gitops-bot"
+                        git config user.email "actions@github.com"
+
+                        git add kustomization.yaml
+                        git commit -m "chore(gitops): release ${env.TAG_NAME} [skip ci]" || echo "No changes to commit"
+                        git push https://x-access-token:\${GH_APP_TOKEN}@github.com/Banners-python-app/django-advertising-project.git HEAD:main
+                       """
+                }
+                echo "✅ kustomization.yaml updated and pushed via GitHub App!"
+            }
+        }
+    }
+    post{
+        success {
+            echo "Image tags updated with new version"
+        }
+        failure {
+            error("Pipeline failed check logs")
+        }
+        always {
+            sh "docker rm ${env.FULL_IMAGE_NAME}"
+        }
     }
 }

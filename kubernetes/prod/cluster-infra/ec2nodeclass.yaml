@@ -34,3 +34,5 @@ spec:
   tags:
     Name: karpenter-provisioned-node
     Environment: prod
+    kubernetes.io/cluster/ban-cluster: "owned"        # this is coming from trfm policu doc AllowEC2Provisioning statemen tags
+    karpenter.sh/discovery: "ban-cluster"             # this is coming from trfm policu doc AllowEC2Provisioning statemen tags
