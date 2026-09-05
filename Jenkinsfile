@@ -290,15 +290,24 @@ pipeline {
                             curl "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
                             export PATH="\${WORKSPACE}:\${PATH}"
                         fi
-                        # Navigate to manifests directory
-                        cd kubernetes/prod/app
-                        kustomize edit set image banners-django-container=${env.FULL_IMAGE_NAME}
+                        
                         git config user.name "billsaathi-gitops-bot"
                         git config user.email "actions@github.com"
 
+                        git remote set-url origin https://x-access-token:\${GH_APP_TOKEN}@github.com/Banners-python-app/django-advertising-project.git
+                        
+                        # 3. Clean the workspace and pull
+                        git reset --hard
+                        git checkout -B dev
+                        git pull origin dev
+
+                        # Navigate to manifests directory
+                        cd kubernetes/prod/app
+                        kustomize edit set image banners-django-container=${env.FULL_IMAGE_NAME}l
+
                         git add kustomization.yaml
                         git commit -m "chore(gitops): release ${env.TAG_NAME} [skip ci]" || echo "No changes to commit"
-                        git push https://x-access-token:\${GH_APP_TOKEN}@github.com/Banners-python-app/django-advertising-project.git HEAD:dev
+                        git push origin HEAD
                        """
                     }
                 }
