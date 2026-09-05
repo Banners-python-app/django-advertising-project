@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import sys
 import os, environ
 import dj_database_url
 from django.templatetags.static import static
@@ -102,7 +103,11 @@ DATABASES = {
 }
 
 database_url = os.environ.get('DATABASE_URL')
-if database_url:
+
+# Detect if we are running 'manage.py test' or 'pytest'
+IS_TESTING = 'test' in sys.argv or 'pytest' in sys.modules
+
+if database_url and not IS_TESTING:
     # CRITICAL: conn_max_age MUST be 0 for Serverless and Supabase connection poolers
     db_from_env = dj_database_url.config(
         default=database_url,
