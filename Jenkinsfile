@@ -282,7 +282,7 @@ pipeline {
                         usernameVariable: 'GH_APP_USER',
                         // injects temp token            
                         passwordVariable: 'GH_APP_TOKEN'
-                    )])
+                    )]) {
 
                     sh """
                         # Download Kustomize binary if not present
@@ -300,6 +300,7 @@ pipeline {
                         git commit -m "chore(gitops): release ${env.TAG_NAME} [skip ci]" || echo "No changes to commit"
                         git push https://x-access-token:\${GH_APP_TOKEN}@github.com/Banners-python-app/django-advertising-project.git HEAD:main
                        """
+                    }
                 }
                 echo "✅ kustomization.yaml updated and pushed via GitHub App!"
             }
@@ -313,7 +314,8 @@ pipeline {
             error("Pipeline failed check logs")
         }
         always {
-            sh "docker rm ${env.FULL_IMAGE_NAME}"
+            // added || true to handle missing images safely
+            sh "docker rmi ${env.FULL_IMAGE_NAME} || true"
         }
     }
 }
