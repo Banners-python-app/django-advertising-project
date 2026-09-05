@@ -112,7 +112,30 @@ spec:
             - mountPath: /tmp/prometheus_multiproc_dir
               name: prom-volume
 
+          # Gives Django up to 60 seconds (10s * 6 tries) to boot up before liveness kicks in
+          startupProbe:
+            httpGet:
+              path: /
+              port: 8000
+            timeoutSeconds: 5
+            failureThreshold: 6
+            periodSeconds: 10
           
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 0  # give nginx few sec to start (startup probe handling boot time)
+            periodSeconds: 15       # check every 15 sec
+            timeoutSeconds: 3       # fail if it takes longer than 3 sec to respond
+            failureThreshold: 3     # restart container after 3 consecutive failures
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 0
+            periodSeconds: 15
+            successThreshold: 1     #mark as ready after 1 successful check
 
       volumes:
         - name: tmp-volume
