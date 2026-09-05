@@ -298,7 +298,7 @@ pipeline {
 
                         git add kustomization.yaml
                         git commit -m "chore(gitops): release ${env.TAG_NAME} [skip ci]" || echo "No changes to commit"
-                        git push https://x-access-token:\${GH_APP_TOKEN}@github.com/Banners-python-app/django-advertising-project.git HEAD
+                        git push https://x-access-token:\${GH_APP_TOKEN}@github.com/Banners-python-app/django-advertising-project.git HEAD:dev
                        """
                     }
                 }
