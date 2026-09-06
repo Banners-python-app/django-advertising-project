@@ -17,8 +17,18 @@ spec:
     path: kubernetes/prod/app
     #directory:
     #  recurse: false
-    kustomize:
-      buildOptions: "--enable-helm"
+    #kustomize:
+    #  buildOptions: "--enable-helm"
+    # For kustomize use below cmds to get argocd cm and update as below
+    # kubectl edit cm argocd-cm -n argocd
+    #  apiVersion: v1
+    #  kind: ConfigMap
+    #  metadata:
+    #    name: argocd-cm
+    #    namespace: argocd
+    #  data:
+    #    kustomize.buildOptions: "--enable-helm"
+
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: banners-main-app
