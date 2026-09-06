@@ -15,8 +15,10 @@ spec:
     repoURL: 'https://github.com/Banners-python-app/django-advertising-project.git'
     targetRevision: dev
     path: kubernetes/prod/app
-    directory:
-      recurse: false
+    #directory:
+    #  recurse: false
+    kustomize:
+      buildOptions: "--enable-helm"
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: banners-main-app
